@@ -8,18 +8,16 @@ import {
   type ReactNode,
 } from "react";
 
+import { login as requestLogin } from "../api/auth";
+import type { Employee } from "../api/auth";
 import { setAuthToken } from "../api/client";
 
-export interface Employee {
-  id: number;
-  name: string;
-  email: string;
-}
+export type { Employee };
 
 export interface AuthContextValue {
   token: string | null;
   employee: Employee | null;
-  /** Filled in by the staff-login ticket; inert until then. */
+  /** Signs in against POST /api/auth/login; rejects with the API's ApiError. */
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -75,10 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [employee]);
 
-  const login = useCallback(async (_email: string, _password: string): Promise<void> => {
-    // The staff-login ticket replaces this body with POST /api/auth/login.
-    // Until then the context API is complete but deliberately inert.
-    throw new Error("Die Anmeldung ist noch nicht verfügbar.");
+  const login = useCallback(async (email: string, password: string): Promise<void> => {
+    const result = await requestLogin(email, password);
+    // Set the client token synchronously so a request fired by the page the
+    // caller navigates to immediately after never races the state effect.
+    setAuthToken(result.token);
+    setToken(result.token);
+    setEmployee(result.employee);
   }, []);
 
   const logout = useCallback((): void => {

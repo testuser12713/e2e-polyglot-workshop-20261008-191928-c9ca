@@ -16,6 +16,11 @@ function renderAt(path: string) {
 }
 
 beforeEach(() => {
+  // The workshop routes sit behind RequireAuth now, so the route-table tests
+  // seed a session the same way a real login would; the unauthenticated
+  // redirect is covered in LoginPage.test.tsx.
+  window.localStorage.clear();
+  window.localStorage.setItem("werkstatt.token", "test-token");
   vi.stubGlobal(
     "fetch",
     vi.fn(() =>
@@ -46,7 +51,7 @@ describe("App route table", () => {
   it("renders the login page at /werkstatt/login", async () => {
     renderAt("/werkstatt/login");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Werkstatt-Login" }),
+      await screen.findByRole("heading", { level: 1, name: "Werkstatt-Anmeldung" }),
     ).toBeInTheDocument();
   });
 
