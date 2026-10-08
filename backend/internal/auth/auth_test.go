@@ -174,6 +174,25 @@ func TestLoginUnknownEmailReturnsUniform401(t *testing.T) {
 	assertUniformError(t, rec.Body.Bytes())
 }
 
+// TestLoginEmptyPasswordReturnsUniform401 pins the boundary the browser surface
+// must not hit: an empty password (or e-mail) is a wrong credential and answers
+// the same uniform 401 as any other bad login, never a 500.
+func TestLoginEmptyPasswordReturnsUniform401(t *testing.T) {
+	pool := testPool(t)
+	store := auth.NewStore(pool)
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"))
+
+	body := fmt.Sprintf(`{"email":%q,"password":""}`, uniqueEmail())
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
+	rec := httptest.NewRecorder()
+	handler.Login(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401; body=%s", rec.Code, rec.Body.String())
+	}
+	assertUniformError(t, rec.Body.Bytes())
+}
+
 func TestSeedSkipsWhenPasswordUnset(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -367,6 +386,107 @@ func TestLoginEndToEndThroughRouter(t *testing.T) {
 	router.ServeHTTP(withToken, req)
 	if withToken.Code == http.StatusUnauthorized {
 		t.Fatalf("workshop with a valid token must not answer 401; body=%s", withToken.Body.String())
+	}
+}
+
+// TestLoginWithConfiguredCredentialsReturnsToken reproduces the real startup
+// path (config.Load -> Seed) and signs in with exactly the configured
+// credentials against PostgreSQL. This is the flow the running product uses: a
+// person signs in at /werkstatt/login with the account the seed wrote from the
+// environment (RUN.json supplies the documented demo account as a `dev` value).
+func TestLoginWithConfiguredCredentialsReturnsToken(t *testing.T) {
+	const secret = "configured-login-secret"
+	const configuredEmail = "meister@example.com"
+	const configuredPassword = "changeme"
+	t.Setenv("AUTH_SECRET", secret)
+	t.Setenv("EMPLOYEE_EMAIL", configuredEmail)
+	t.Setenv("EMPLOYEE_PASSWORD", configuredPassword)
+	if os.Getenv("VALKEY_URL") == "" {
+		t.Setenv("VALKEY_URL", "redis://127.0.0.1:6379/0")
+	}
+
+	pool := testPool(t)
+	ctx := context.Background()
+	deleteEmployee(t, pool, configuredEmail)
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("config.Load: %v", err)
+	}
+	if cfg.EmployeeEmail != configuredEmail || cfg.EmployeePassword != configuredPassword {
+		t.Fatalf("config did not carry the configured credentials: %q / %q",
+			cfg.EmployeeEmail, cfg.EmployeePassword)
+	}
+
+	if err := auth.Seed(ctx, auth.NewStore(pool), cfg.EmployeeEmail, cfg.EmployeePassword); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	router := httpapi.NewRouter(config.Config{AuthSecret: secret, CORSOrigin: "http://localhost:5173"},
+		pool, queue.NewPublisher("", "workshop-invoices"))
+	body := fmt.Sprintf(`{"email":%q,"password":%q}`, cfg.EmployeeEmail, cfg.EmployeePassword)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login with configured credentials = %d, want 200; body=%s", rec.Code, rec.Body.String())
+	}
+	var resp struct {
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode login response: %v", err)
+	}
+	if resp.Token == "" {
+		t.Fatal("login with configured credentials returned an empty token")
+	}
+}
+
+// TestSeedRefreshesAccountStoredWithDifferentEmailCase is the regression for the
+// seed mismatch: FindByEmail is case-insensitive while the old
+// `ON CONFLICT (email)` refresh was not, so a row left behind with different
+// casing made the seed insert a second account for the same person. A login then
+// read one of the two arbitrarily and could reject the configured password.
+func TestSeedRefreshesAccountStoredWithDifferentEmailCase(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	store := auth.NewStore(pool)
+	email := uniqueEmail()
+	password := "configured-Passw0rd!"
+	deleteEmployee(t, pool, email)
+
+	// A stale account for the same address, stored with different casing and an
+	// outdated password hash (as an earlier run or spelling could leave it).
+	staleHash, err := bcrypt.GenerateFromPassword([]byte("stale-password"), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("hash stale password: %v", err)
+	}
+	mixedCase := strings.ToUpper(email[:1]) + email[1:]
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO employees (name, email, password_hash) VALUES ($1, $2, $3)`,
+		"stale", mixedCase, string(staleHash)); err != nil {
+		t.Fatalf("insert stale employee: %v", err)
+	}
+
+	if err := auth.Seed(ctx, store, email, password); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	var count int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM employees WHERE lower(email) = lower($1)`, email).Scan(&count); err != nil {
+		t.Fatalf("count employees: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("employee count for %s = %d, want 1", email, count)
+	}
+
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("case-seed-secret"))
+	body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
+	rec := httptest.NewRecorder()
+	handler.Login(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login after refresh = %d, want 200; body=%s", rec.Code, rec.Body.String())
 	}
 }
 

@@ -16,7 +16,9 @@ const defaultEmployeeName = "Werkstatt"
 // Seed creates or refreshes the first employee from the configured e-mail and
 // password at startup, storing only the bcrypt hash. When EMPLOYEE_PASSWORD
 // (or the e-mail) is unset it logs a warning and returns without seeding, so
-// the API still starts.
+// the API still starts. The credentials come from the environment (see
+// config.Load); RUN.json carries the documented demo account as a fixed `dev`
+// value, so the /werkstatt/login demo works without any further setup.
 func Seed(ctx context.Context, store *Store, email, password string) error {
 	if strings.TrimSpace(password) == "" {
 		log.Printf("auth: EMPLOYEE_PASSWORD is not set, skipping employee seed")

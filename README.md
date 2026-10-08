@@ -56,11 +56,14 @@ Pflicht sind damit `DATABASE_URL`, `VALKEY_URL` und `AUTH_SECRET`. `EMPLOYEE_EMA
 und `EMPLOYEE_PASSWORD` sind optional: Fehlen sie, startet die API trotzdem und
 überspringt das Anlegen des Mitarbeiters mit einem Log-Eintrag.
 
-Unter `RUN.json` tragen `EMPLOYEE_EMAIL` und `EMPLOYEE_PASSWORD` dagegen feste
+Unter `RUN.json` tragen `EMPLOYEE_EMAIL` und `EMPLOYEE_PASSWORD` feste
 `dev`-Werte — das dokumentierte Demo-Konto `meister@example.com` / `changeme`
 aus dem Abschnitt „Starten (Entwicklung)“. Damit funktioniert die Anmeldung
 an `/werkstatt/login` ohne weitere Einrichtung sofort. `AUTH_SECRET` bleibt
-`generate`, wird also bei jedem Lauf neu erzeugt.
+`generate`, wird also bei jedem Lauf neu erzeugt. Die E-Mail wird
+groß-/kleinschreibungsunabhängig gespeichert, sodass der Seed einen bereits
+vorhandenen Mitarbeiter in jedem Fall aktualisiert statt einen zweiten
+anzulegen.
 
 ## Starten (Entwicklung)
 
