@@ -33,10 +33,22 @@ func Open(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
+// migrationLockKey is the advisory-lock key that serializes concurrent
+// migration runs. It spells "workshop" in ASCII.
+const migrationLockKey int64 = 0x776f726b73686f70
+
 // RunMigrations applies every migrations/*.sql file that has not been applied
 // yet, in file-name order. When dir is empty the directory is located by
 // walking up from the working directory, so both the server and the tests find
 // backend/migrations.
+//
+// The whole run happens in one transaction that first takes the advisory lock
+// migrationLockKey. Several processes apply migrations to the same database at
+// the same time — parallel `go test` packages, or more than one API instance —
+// and PostgreSQL's CREATE TABLE IF NOT EXISTS is not safe under that race: two
+// runs both pass the existence check and the loser dies with a duplicate
+// pg_type/pg_class error. The advisory transaction lock serializes the runs and
+// is released automatically when the transaction ends.
 func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
 	if dir == "" {
 		dir = findMigrationsDir()
@@ -50,7 +62,19 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
 	}
 	sort.Strings(files)
 
-	if _, err := pool.Exec(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin migrations: %w", err)
+	}
+	// A rollback after a successful commit is a no-op, so this only cleans up
+	// the error paths.
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, migrationLockKey); err != nil {
+		return fmt.Errorf("lock migrations: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (
 		version TEXT PRIMARY KEY,
 		applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
 	)`); err != nil {
@@ -60,7 +84,7 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
 	for _, file := range files {
 		version := strings.TrimSuffix(filepath.Base(file), ".sql")
 		var applied bool
-		if err := pool.QueryRow(ctx,
+		if err := tx.QueryRow(ctx,
 			`SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, version,
 		).Scan(&applied); err != nil {
 			return fmt.Errorf("check migration %s: %w", version, err)
@@ -72,23 +96,18 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
 		if err != nil {
 			return fmt.Errorf("read migration %s: %w", version, err)
 		}
-		tx, err := pool.Begin(ctx)
-		if err != nil {
-			return fmt.Errorf("begin migration %s: %w", version, err)
-		}
 		// With no arguments pgx uses the simple protocol, so a file may contain
 		// several statements.
 		if _, err := tx.Exec(ctx, string(sqlBytes)); err != nil {
-			_ = tx.Rollback(ctx)
 			return fmt.Errorf("apply migration %s: %w", version, err)
 		}
 		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version) VALUES ($1)`, version); err != nil {
-			_ = tx.Rollback(ctx)
 			return fmt.Errorf("record migration %s: %w", version, err)
 		}
-		if err := tx.Commit(ctx); err != nil {
-			return fmt.Errorf("commit migration %s: %w", version, err)
-		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit migrations: %w", err)
 	}
 	return nil
 }
