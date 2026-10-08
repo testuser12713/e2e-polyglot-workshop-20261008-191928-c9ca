@@ -490,6 +490,80 @@ func TestSeedRefreshesAccountStoredWithDifferentEmailCase(t *testing.T) {
 	}
 }
 
+// TestLoginNormalizesConfiguredCredentialsFromEnvironment is the regression for
+// the split between the string hashed at seed time and the string the login
+// form posts. The demo credentials reach the process through the environment,
+// and an injected value commonly arrives with a trailing newline or wrapped in
+// a pair of quotes; bcrypt then hashes those bytes, so the seed writes a hash
+// that never matches the documented password and every login answers 401. The
+// test drives the full real path — t.Setenv -> config.Load -> Seed ->
+// POST /api/auth/login against PostgreSQL — for each spelling and expects 200.
+func TestLoginNormalizesConfiguredCredentialsFromEnvironment(t *testing.T) {
+	const secret = "normalize-login-secret"
+	if os.Getenv("VALKEY_URL") == "" {
+		t.Setenv("VALKEY_URL", "redis://127.0.0.1:6379/0")
+	}
+
+	pool := testPool(t)
+	ctx := context.Background()
+
+	cases := []struct {
+		name     string
+		emailFmt string
+		passFmt  string
+	}{
+		{name: "plain", emailFmt: "%s", passFmt: "%s"},
+		{name: "trailing newline", emailFmt: "%s\n", passFmt: "%s\n"},
+		{name: "surrounding double quotes", emailFmt: `"%s"`, passFmt: `"%s"`},
+		{name: "surrounding single quotes", emailFmt: "'%s'", passFmt: "'%s'"},
+		{name: "quotes wrapped in whitespace", emailFmt: "  \"%s\"\n", passFmt: " '%s'\n"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			baseEmail := uniqueEmail()
+			const password = "changeme"
+			t.Setenv("AUTH_SECRET", secret)
+			t.Setenv("EMPLOYEE_EMAIL", fmt.Sprintf(tc.emailFmt, baseEmail))
+			t.Setenv("EMPLOYEE_PASSWORD", fmt.Sprintf(tc.passFmt, password))
+
+			cfg, err := config.Load()
+			if err != nil {
+				t.Fatalf("config.Load: %v", err)
+			}
+			if cfg.EmployeeEmail != baseEmail {
+				t.Fatalf("normalized email = %q, want %q", cfg.EmployeeEmail, baseEmail)
+			}
+			if cfg.EmployeePassword != password {
+				t.Fatalf("normalized password = %q, want %q", cfg.EmployeePassword, password)
+			}
+
+			deleteEmployee(t, pool, baseEmail)
+			if err := auth.Seed(ctx, auth.NewStore(pool), cfg.EmployeeEmail, cfg.EmployeePassword); err != nil {
+				t.Fatalf("seed: %v", err)
+			}
+
+			router := httpapi.NewRouter(config.Config{AuthSecret: secret, CORSOrigin: "http://localhost:5173"},
+				pool, queue.NewPublisher("", "workshop-invoices"))
+			body := fmt.Sprintf(`{"email":%q,"password":%q}`, cfg.EmployeeEmail, cfg.EmployeePassword)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
+			if rec.Code != http.StatusOK {
+				t.Fatalf("login = %d, want 200; body=%s", rec.Code, rec.Body.String())
+			}
+			var resp struct {
+				Token string `json:"token"`
+			}
+			if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+				t.Fatalf("decode login: %v", err)
+			}
+			if resp.Token == "" {
+				t.Fatal("login with normalized credentials returned an empty token")
+			}
+		})
+	}
+}
+
 // assertUniformError checks the shared error envelope {"error":{"code","message"}}.
 func assertUniformError(t *testing.T, body []byte) {
 	t.Helper()

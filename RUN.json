@@ -175,7 +175,7 @@
         "EMPLOYEE_PASSWORD": {
           "dev": "changeme",
           "not_secret": true,
-          "why": "Published demo account for the workshop login (see README, section 'Starten (Entwicklung)'); it grants access only to the local demo employee and is intentionally committed so the documented login works out of the box."
+          "why": "Published demo account for the local workshop login (see README, section 'Starten (Entwicklung)'). Intentionally committed so the documented login works out of the box; it grants access only to the locally seeded demo employee and is not a real secret."
         },
         "CORS_ORIGIN": {
           "dev": "${service:web.origin}"

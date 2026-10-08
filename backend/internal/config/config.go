@@ -39,8 +39,8 @@ func Load() (Config, error) {
 		QueueName:        getenvDefault("QUEUE_NAME", "workshop-invoices"),
 		HourlyRateCents:  8900,
 		AuthSecret:       os.Getenv("AUTH_SECRET"),
-		EmployeeEmail:    os.Getenv("EMPLOYEE_EMAIL"),
-		EmployeePassword: os.Getenv("EMPLOYEE_PASSWORD"),
+		EmployeeEmail:    normalizeCredential(os.Getenv("EMPLOYEE_EMAIL")),
+		EmployeePassword: normalizeCredential(os.Getenv("EMPLOYEE_PASSWORD")),
 		CORSOrigin:       normalizeOrigin(os.Getenv("CORS_ORIGIN")),
 	}
 
@@ -82,6 +82,24 @@ func getenvDefault(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// normalizeCredential turns an injected credential into the value a human
+// actually types. An environment value is often delivered with a trailing
+// newline or wrapped in one pair of quotes by the surrounding shell or runner;
+// bcrypt hashes those extra bytes, so the hash at seed time no longer matches
+// the string the login form posts. It trims surrounding whitespace and strips a
+// single pair of matching surrounding quotes, and is applied to EMPLOYEE_EMAIL
+// and EMPLOYEE_PASSWORD only — never to a URL or key where such bytes matter.
+func normalizeCredential(value string) string {
+	v := strings.TrimSpace(value)
+	if len(v) >= 2 {
+		first, last := v[0], v[len(v)-1]
+		if (first == '"' && last == '"') || (first == '\'' && last == '\'') {
+			v = strings.TrimSpace(v[1 : len(v)-1])
+		}
+	}
+	return v
 }
 
 // normalizeOrigin turns an unset or unresolved origin into the dev default and
