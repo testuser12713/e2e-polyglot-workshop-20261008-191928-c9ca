@@ -17,8 +17,8 @@ export interface TableProps<Row> {
 
 /**
  * Table primitive (Design.md OrderListRow / Table): header 12px/600 uppercase,
- * rows with a 1px divider. Phone width turns each row into a stacked card via
- * the `.table--stack` class the later list tickets use.
+ * rows with a 1px divider. The later order-list ticket owns the phone-width
+ * stacked-card variant.
  */
 export default function Table<Row>({
   columns,

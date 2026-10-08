@@ -407,7 +407,7 @@ a {
 }
 
 .card__meta {
-  font-size: var(--size-xs);
+  font-size: 13px;
   color: var(--color-fg-muted);
 }
 
