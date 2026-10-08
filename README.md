@@ -48,9 +48,19 @@ Variablen einer Klasse zugeordnet (`dev`, `generate` oder `external`).
 | `QUEUE_NAME` | nein | `workshop-invoices` | Valkey-Liste für Rechnungsaufträge |
 | `HOURLY_RATE_CENTS` | nein | `8900` | Stundensatz in Cent für die Rechnung |
 | `AUTH_SECRET` | ja | — | Signatur-Schlüssel der Bearer-Token (wird je Lauf erzeugt) |
-| `EMPLOYEE_EMAIL` | ja | — | E-Mail des beim Start angelegten Mitarbeiters |
-| `EMPLOYEE_PASSWORD` | ja | — | Klartext-Passwort des Mitarbeiters; gespeichert wird nur der Hash |
+| `EMPLOYEE_EMAIL` | nein | — | E-Mail des beim Start angelegten Mitarbeiters |
+| `EMPLOYEE_PASSWORD` | nein | — | Klartext-Passwort des Mitarbeiters; gespeichert wird nur der Hash |
 | `CORS_ORIGIN` | nein | `http://localhost:5173` | erlaubte Herkunft der Web-App |
+
+Pflicht sind damit `DATABASE_URL`, `VALKEY_URL` und `AUTH_SECRET`. `EMPLOYEE_EMAIL`
+und `EMPLOYEE_PASSWORD` sind optional: Fehlen sie, startet die API trotzdem und
+überspringt das Anlegen des Mitarbeiters mit einem Log-Eintrag.
+
+Unter `RUN.json` tragen `EMPLOYEE_EMAIL` und `EMPLOYEE_PASSWORD` dagegen feste
+`dev`-Werte — das dokumentierte Demo-Konto `meister@example.com` / `changeme`
+aus dem Abschnitt „Starten (Entwicklung)“. Damit funktioniert die Anmeldung
+an `/werkstatt/login` ohne weitere Einrichtung sofort. `AUTH_SECRET` bleibt
+`generate`, wird also bei jedem Lauf neu erzeugt.
 
 ## Starten (Entwicklung)
 

@@ -170,12 +170,12 @@
           "bytes": 32
         },
         "EMPLOYEE_EMAIL": {
-          "generate": "hex",
-          "bytes": 16
+          "dev": "meister@example.com"
         },
         "EMPLOYEE_PASSWORD": {
-          "generate": "hex",
-          "bytes": 16
+          "dev": "changeme",
+          "not_secret": true,
+          "why": "Published demo account for the workshop login (see README, section 'Starten (Entwicklung)'); it grants access only to the local demo employee and is intentionally committed so the documented login works out of the box."
         },
         "CORS_ORIGIN": {
           "dev": "${service:web.origin}"

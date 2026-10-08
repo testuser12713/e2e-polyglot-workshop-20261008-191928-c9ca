@@ -88,7 +88,12 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
 	}
 	sort.Strings(files)
 
-	tx, err := pool.Begin(ctx)
+	// Run the transaction on the same connection that holds the session-level
+	// advisory lock. A second connection from the pool would block forever on
+	// the transaction-level lock below (session- and transaction-level advisory
+	// locks share one lock space and conflict across sessions), so the lock and
+	// the migration must share a session.
+	tx, err := lockConn.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin migrations: %w", err)
 	}
