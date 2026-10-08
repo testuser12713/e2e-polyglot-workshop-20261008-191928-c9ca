@@ -104,6 +104,79 @@
           "dev": "${service:api.origin}"
         }
       }
+    },
+    {
+      "name": "api",
+      "dir": "backend",
+      "stack": "go",
+      "kind": "server",
+      "install": [
+        [
+          "go",
+          "mod",
+          "download"
+        ]
+      ],
+      "build": [
+        [
+          "go",
+          "build",
+          "./..."
+        ]
+      ],
+      "test": [
+        [
+          "go",
+          "test",
+          "./..."
+        ]
+      ],
+      "start": [
+        "go",
+        "run",
+        "."
+      ],
+      "port": 8080,
+      "port_env": "PORT",
+      "health": {
+        "path": "/api/health",
+        "expect_status": [
+          200
+        ]
+      },
+      "depends_on": [
+        "db",
+        "valkey"
+      ],
+      "env": {
+        "DATABASE_URL": {
+          "dev": "${service:db.url}"
+        },
+        "VALKEY_URL": {
+          "dev": "${service:valkey.url}"
+        },
+        "QUEUE_NAME": {
+          "dev": "workshop-invoices"
+        },
+        "HOURLY_RATE_CENTS": {
+          "dev": "8900"
+        },
+        "AUTH_SECRET": {
+          "generate": "hex",
+          "bytes": 32
+        },
+        "EMPLOYEE_EMAIL": {
+          "generate": "hex",
+          "bytes": 16
+        },
+        "EMPLOYEE_PASSWORD": {
+          "generate": "hex",
+          "bytes": 16
+        },
+        "CORS_ORIGIN": {
+          "dev": "${service:web.origin}"
+        }
+      }
     }
   ]
 }
