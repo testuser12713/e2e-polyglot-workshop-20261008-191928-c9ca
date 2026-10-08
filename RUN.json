@@ -17,19 +17,93 @@
       "stack": "python",
       "kind": "worker",
       "install": [
-        ["${python}", "-m", "pip", "install", "-e", "."]
+        [
+          "${python}",
+          "-m",
+          "pip",
+          "install",
+          "-e",
+          "."
+        ]
       ],
-      "start": ["${python}", "-m", "worker"],
+      "start": [
+        "${python}",
+        "-m",
+        "worker"
+      ],
       "test": [
-        ["${python}", "-m", "pytest"]
+        [
+          "${python}",
+          "-m",
+          "pytest"
+        ]
       ],
       "env": {
-        "DATABASE_URL": {"dev": "${service:db.url}"},
-        "VALKEY_URL": {"dev": "${service:valkey.url}"},
-        "QUEUE_NAME": {"dev": "workshop-invoices"},
-        "HOURLY_RATE_CENTS": {"dev": "8900"}
+        "DATABASE_URL": {
+          "dev": "${service:db.url}"
+        },
+        "VALKEY_URL": {
+          "dev": "${service:valkey.url}"
+        },
+        "QUEUE_NAME": {
+          "dev": "workshop-invoices"
+        },
+        "HOURLY_RATE_CENTS": {
+          "dev": "8900"
+        }
       },
-      "depends_on": ["db", "valkey"]
+      "depends_on": [
+        "db",
+        "valkey"
+      ]
+    },
+    {
+      "name": "web",
+      "dir": "frontend",
+      "stack": "web-vite",
+      "kind": "server",
+      "install": [
+        [
+          "npm",
+          "ci"
+        ]
+      ],
+      "build": [
+        [
+          "npm",
+          "run",
+          "build"
+        ]
+      ],
+      "start": [
+        "npm",
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "${PORT}"
+      ],
+      "test": [
+        [
+          "npm",
+          "test"
+        ]
+      ],
+      "port": 5173,
+      "port_env": "PORT",
+      "health": {
+        "path": "/",
+        "expect_status": [
+          200
+        ]
+      },
+      "env": {
+        "VITE_API_BASE_URL": {
+          "dev": "${service:api.origin}"
+        }
+      }
     }
   ]
 }
