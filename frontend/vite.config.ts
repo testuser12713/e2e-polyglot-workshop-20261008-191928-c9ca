@@ -8,5 +8,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     css: true,
+    // Only the product's own unit tests. The office's Playwright smoke file
+    // lives in e2e/ and is run by its own harness, not by vitest.
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
 });
