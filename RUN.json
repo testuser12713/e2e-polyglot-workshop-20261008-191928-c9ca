@@ -144,11 +144,15 @@
           200
         ]
       },
+      "ready_timeout_s": 90,
       "depends_on": [
         "db",
         "valkey"
       ],
       "env": {
+        "GOTOOLCHAIN": {
+          "dev": "auto"
+        },
         "DATABASE_URL": {
           "dev": "${service:db.url}"
         },
