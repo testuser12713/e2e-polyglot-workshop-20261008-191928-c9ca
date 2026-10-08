@@ -71,12 +71,6 @@ func (c Config) Validate() error {
 	if c.AuthSecret == "" {
 		missing = append(missing, "AUTH_SECRET")
 	}
-	if c.EmployeeEmail == "" {
-		missing = append(missing, "EMPLOYEE_EMAIL")
-	}
-	if c.EmployeePassword == "" {
-		missing = append(missing, "EMPLOYEE_PASSWORD")
-	}
 	if len(missing) > 0 {
 		return fmt.Errorf("missing required configuration: %s (see RUN.json)", strings.Join(missing, ", "))
 	}
