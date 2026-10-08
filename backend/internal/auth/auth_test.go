@@ -96,7 +96,7 @@ func TestSeedStoresOnlyHashAndLoginReturnsToken(t *testing.T) {
 	}
 
 	issuer := auth.NewTokenIssuer("test-secret")
-	handler := auth.NewHandler(store, issuer, "", "")
+	handler := auth.NewHandler(store, issuer, email, password)
 
 	body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
@@ -146,7 +146,7 @@ func TestLoginWrongPasswordReturnsUniform401(t *testing.T) {
 		t.Fatalf("seed: %v", err)
 	}
 
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), "", "")
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), email, "correct-horse")
 	body := fmt.Sprintf(`{"email":%q,"password":"wrong-password"}`, email)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -161,7 +161,7 @@ func TestLoginWrongPasswordReturnsUniform401(t *testing.T) {
 func TestLoginUnknownEmailReturnsUniform401(t *testing.T) {
 	pool := testPool(t)
 	store := auth.NewStore(pool)
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), "", "")
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), uniqueEmail(), "demo-Passw0rd!")
 
 	body := fmt.Sprintf(`{"email":%q,"password":"whatever"}`, uniqueEmail())
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
