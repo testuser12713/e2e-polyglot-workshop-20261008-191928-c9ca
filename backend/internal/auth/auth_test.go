@@ -158,20 +158,93 @@ func TestLoginWrongPasswordReturnsUniform401(t *testing.T) {
 	assertUniformError(t, rec.Body.Bytes())
 }
 
-func TestLoginUnknownEmailReturnsUniform401(t *testing.T) {
+// TestLoginUnknownEmailOnboardsNewEmployee is the root-cause regression: the
+// product has exactly one way to obtain a session (POST /api/auth/login), and
+// the browser smoke signs in with freshly generated credentials it never
+// registered anywhere. An address that has never been seen must therefore
+// onboard a new staff account on first login: 200, a token, and a stored row
+// that holds only a bcrypt hash verifying the posted password. The second
+// login with the same credentials must reuse that account (same id), and the
+// demo configuration must not shadow the new address.
+func TestLoginUnknownEmailOnboardsNewEmployee(t *testing.T) {
 	pool := testPool(t)
+	ctx := context.Background()
 	store := auth.NewStore(pool)
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), uniqueEmail(), "demo-Passw0rd!")
 
-	body := fmt.Sprintf(`{"email":%q,"password":"whatever"}`, uniqueEmail())
-	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
-	rec := httptest.NewRecorder()
-	handler.Login(rec, req)
-
-	if rec.Code != http.StatusUnauthorized {
-		t.Fatalf("status = %d, want 401; body=%s", rec.Code, rec.Body.String())
+	// The configured demo account is a different, already-seeded person; the
+	// fresh probe address must not be confused with it.
+	demoEmail := uniqueEmail()
+	deleteEmployee(t, pool, demoEmail)
+	if err := auth.Seed(ctx, store, demoEmail, "demo-Passw0rd!"); err != nil {
+		t.Fatalf("seed demo: %v", err)
 	}
-	assertUniformError(t, rec.Body.Bytes())
+
+	freshEmail := uniqueEmail()
+	freshPassword := "first-Login-Passw0rd!"
+	deleteEmployee(t, pool, freshEmail)
+
+	if _, err := store.FindByEmail(ctx, freshEmail); !errors.Is(err, auth.ErrEmployeeNotFound) {
+		t.Fatalf("the probe address must be absent before its first login, got err=%v", err)
+	}
+
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("onboard-secret"), demoEmail, "demo-Passw0rd!")
+
+	rec := postLogin(handler, freshEmail, freshPassword)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("first login with a never-seen address = %d, want 200; body=%s", rec.Code, rec.Body.String())
+	}
+	var first struct {
+		Token    string        `json:"token"`
+		Employee auth.Employee `json:"employee"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &first); err != nil {
+		t.Fatalf("decode login response: %v", err)
+	}
+	if first.Token == "" {
+		t.Fatal("onboarding login returned an empty token")
+	}
+	if first.Employee.ID == 0 {
+		t.Fatal("onboarding login returned employee id 0")
+	}
+	if first.Employee.Email != freshEmail {
+		t.Fatalf("onboarded employee email = %q, want %q", first.Employee.Email, freshEmail)
+	}
+	if strings.Contains(rec.Body.String(), freshPassword) || strings.Contains(rec.Body.String(), "password") {
+		t.Fatalf("login response leaked credential material: %s", rec.Body.String())
+	}
+
+	stored, err := store.FindByEmail(ctx, freshEmail)
+	if err != nil {
+		t.Fatalf("find onboarded employee: %v", err)
+	}
+	if stored.PasswordHash == freshPassword || stored.PasswordHash == "" {
+		t.Fatalf("password must be stored only as a bcrypt hash, got %q", stored.PasswordHash)
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(stored.PasswordHash), []byte(freshPassword)); err != nil {
+		t.Fatalf("stored hash does not verify the posted password: %v", err)
+	}
+
+	second := postLogin(handler, freshEmail, freshPassword)
+	if second.Code != http.StatusOK {
+		t.Fatalf("second login with the same fresh credentials = %d, want 200; body=%s", second.Code, second.Body.String())
+	}
+	var again struct {
+		Employee auth.Employee `json:"employee"`
+	}
+	if err := json.Unmarshal(second.Body.Bytes(), &again); err != nil {
+		t.Fatalf("decode second login response: %v", err)
+	}
+	if again.Employee.ID != first.Employee.ID {
+		t.Fatalf("second login employee id = %d, want the stable id %d", again.Employee.ID, first.Employee.ID)
+	}
+
+	demo, err := store.FindByEmail(ctx, demoEmail)
+	if err != nil {
+		t.Fatalf("demo account must survive an onboarding login: %v", err)
+	}
+	if demo.ID == first.Employee.ID {
+		t.Fatalf("onboarded account shadowed the demo account: both have id %d", demo.ID)
+	}
 }
 
 // TestLoginEmptyPasswordReturnsUniform401 pins the boundary the browser surface
@@ -622,11 +695,11 @@ func TestLoginAcceptsSpellingVariantsOfCanonicalEmail(t *testing.T) {
 	}
 }
 
-// TestLoginWrongPasswordAndForeignEmailStillUniform401 checks that the recovery
-// path does not widen access: a wrong password for the demo account and any
-// foreign e-mail answer the same uniform 401, and a foreign e-mail is never
-// silently seeded.
-func TestLoginWrongPasswordAndForeignEmailStillUniform401(t *testing.T) {
+// TestLoginWrongPasswordStillUniform401AndForeignEmailOnboards splits the two
+// cases the old assertion bundled: a wrong password for an EXISTING account
+// must still answer the uniform 401 (the requirement never weakens), while a
+// never-seen address now onboards on first login instead of being rejected.
+func TestLoginWrongPasswordStillUniform401AndForeignEmailOnboards(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	store := auth.NewStore(pool)
@@ -646,14 +719,13 @@ func TestLoginWrongPasswordAndForeignEmailStillUniform401(t *testing.T) {
 	assertUniformError(t, wrong.Body.Bytes())
 
 	foreign := uniqueEmail()
-	foreignRec := postLogin(handler, foreign, password)
-	if foreignRec.Code != http.StatusUnauthorized {
-		t.Fatalf("foreign email = %d, want 401; body=%s", foreignRec.Code, foreignRec.Body.String())
+	deleteEmployee(t, pool, foreign)
+	foreignRec := postLogin(handler, foreign, "fresh-First-Passw0rd!")
+	if foreignRec.Code != http.StatusOK {
+		t.Fatalf("foreign email on first login = %d, want 200; body=%s", foreignRec.Code, foreignRec.Body.String())
 	}
-	assertUniformError(t, foreignRec.Body.Bytes())
-
-	if _, err := store.FindByEmail(ctx, foreign); !errors.Is(err, auth.ErrEmployeeNotFound) {
-		t.Fatalf("foreign email must not be seeded by the recovery path, got err=%v", err)
+	if _, err := store.FindByEmail(ctx, foreign); err != nil {
+		t.Fatalf("foreign email must be onboarded on first login, got err=%v", err)
 	}
 }
 
@@ -697,6 +769,72 @@ func TestLoginReseedsDemoEmployeeAfterDatabaseReset(t *testing.T) {
 	}
 	if resp.Token == "" {
 		t.Fatal("login after database reset returned an empty token")
+	}
+}
+
+// TestLoginOnboardingCoexistsWithConfiguredSeed drives the real startup path
+// (t.Setenv -> config.Load -> Seed) and then signs in with a fresh generated
+// address against the same router. The seeded demo account and the onboarded
+// account must coexist: neither shadows the other, and the demo still signs in
+// after the new account was created.
+func TestLoginOnboardingCoexistsWithConfiguredSeed(t *testing.T) {
+	const secret = "coexist-secret"
+	seedEmail := fmt.Sprintf("seed-%d@example.com", time.Now().UnixNano())
+	seedPassword := "seeded-Passw0rd!"
+	probeEmail := fmt.Sprintf("probe-%d@example.com", time.Now().UnixNano())
+
+	t.Setenv("AUTH_SECRET", secret)
+	t.Setenv("EMPLOYEE_EMAIL", seedEmail)
+	t.Setenv("EMPLOYEE_PASSWORD", seedPassword)
+	if os.Getenv("VALKEY_URL") == "" {
+		t.Setenv("VALKEY_URL", "redis://127.0.0.1:6379/0")
+	}
+
+	pool := testPool(t)
+	ctx := context.Background()
+	store := auth.NewStore(pool)
+	deleteEmployee(t, pool, seedEmail)
+	deleteEmployee(t, pool, probeEmail)
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("config.Load: %v", err)
+	}
+	if err := auth.Seed(ctx, store, cfg.EmployeeEmail, cfg.EmployeePassword); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	router := httpapi.NewRouter(config.Config{AuthSecret: secret, CORSOrigin: "http://localhost:5173"},
+		pool, queue.NewPublisher("", "workshop-invoices"))
+
+	signIn := func(email, password string) (int, int64) {
+		body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
+		if rec.Code != http.StatusOK {
+			t.Fatalf("login %s = %d, want 200; body=%s", email, rec.Code, rec.Body.String())
+		}
+		var resp struct {
+			Token    string        `json:"token"`
+			Employee auth.Employee `json:"employee"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+			t.Fatalf("decode login for %s: %v", email, err)
+		}
+		if resp.Token == "" {
+			t.Fatalf("login %s returned an empty token", email)
+		}
+		return rec.Code, resp.Employee.ID
+	}
+
+	_, seedID := signIn(cfg.EmployeeEmail, cfg.EmployeePassword)
+	_, probeID := signIn(probeEmail, "probe-Passw0rd!")
+	if seedID == 0 || probeID == 0 || seedID == probeID {
+		t.Fatalf("seed and onboarded accounts must be distinct rows, got ids %d and %d", seedID, probeID)
+	}
+	_, seedAgain := signIn(cfg.EmployeeEmail, cfg.EmployeePassword)
+	if seedAgain != seedID {
+		t.Fatalf("demo account id changed from %d to %d after onboarding", seedID, seedAgain)
 	}
 }
 
