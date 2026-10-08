@@ -1,0 +1,264 @@
+/* Workshop order list screen.
+   Values only from DESIGN.md tokens; the shared primitives in
+   src/styles/global.css are reused where they already exist. */
+
+.order-list .plate {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.order-list .tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* FilterBar ------------------------------------------------------------ */
+
+.order-list .filterbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 639px) {
+  .order-list .filterbar {
+    position: sticky;
+    top: 56px;
+    z-index: 10;
+    background: var(--color-bg);
+    padding: var(--space-1) 0;
+  }
+}
+
+.order-list .filterbar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.order-list .chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-fg-muted);
+  font-family: inherit;
+  font-size: var(--size-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.order-list .chip:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-fg);
+}
+
+.order-list .chip.is-active {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.order-list .filterbar__search {
+  position: relative;
+}
+
+.order-list .filterbar__search .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--color-fg-subtle);
+  pointer-events: none;
+}
+
+.order-list .filterbar__search .field__control {
+  width: 100%;
+  padding-left: 40px;
+}
+
+.order-list .active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.order-list .active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-0);
+  min-height: 44px;
+  padding: 0 var(--space-0) 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  font-size: var(--size-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-fg);
+}
+
+.order-list .active-filter-chip .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-fg-muted);
+  font-size: var(--size-base);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.order-list .active-filter-chip .icon-btn:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-fg);
+}
+
+/* Alert (inline) ------------------------------------------------------- */
+
+.order-list .alert {
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: var(--size-sm);
+}
+
+.order-list .alert--danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+  color: var(--color-fg);
+}
+
+.order-list .alert p {
+  margin: 0;
+}
+
+.order-list .alert p + p {
+  margin-top: var(--space-0);
+}
+
+.order-list .alert .btn {
+  margin-top: var(--space-2);
+}
+
+.order-list .alert__code {
+  font-size: var(--size-xs);
+  color: var(--color-fg-muted);
+}
+
+/* List / table --------------------------------------------------------- */
+
+.order-list__loading {
+  text-align: center;
+  color: var(--color-fg-muted);
+  padding: var(--space-5);
+}
+
+.order-list .order-list__table {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.order-list .order-list__table .table tbody tr {
+  height: 60px;
+  cursor: pointer;
+}
+
+.order-list .order-list__table .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.order-list .order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-0);
+  justify-content: flex-end;
+}
+
+/* Phone: each row becomes a stacked card ------------------------------- */
+
+.order-list .order-cards {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .order-list .order-list__table {
+    display: none;
+  }
+
+  .order-list .order-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
+
+.order-list .order-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.order-list .order-card__line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.order-list .order-card__line + .order-card__line {
+  border-top: 1px solid var(--color-border);
+}
+
+.order-list .order-card__label {
+  font-size: var(--size-xs);
+  color: var(--color-fg-muted);
+}
+
+.order-list .order-card__value {
+  font-size: var(--size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-fg);
+}
+
+.order-list .order-card__actions {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.order-list .order-card__actions .btn {
+  flex: 1;
+}
+
+/* Empty state ---------------------------------------------------------- */
+
+.order-list .empty-state {
+  text-align: center;
+  color: var(--color-fg-muted);
+  padding: var(--space-6) var(--space-4);
+}
+
+.order-list .empty-state p {
+  margin: 0 0 var(--space-3);
+}
