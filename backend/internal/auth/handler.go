@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -44,6 +45,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Email == "" || req.Password == "" {
+		log.Printf("auth: login rejected (empty email or password field)")
 		writeInvalidCredentials(w)
 		return
 	}
@@ -51,6 +53,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	employee, err := h.store.FindByEmail(r.Context(), req.Email)
 	if err != nil {
 		if errors.Is(err, ErrEmployeeNotFound) {
+			log.Printf("auth: login rejected (unknown email)")
 			writeInvalidCredentials(w)
 			return
 		}
@@ -59,6 +62,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(employee.PasswordHash), []byte(req.Password)); err != nil {
+		log.Printf("auth: login rejected (password mismatch for known email)")
 		writeInvalidCredentials(w)
 		return
 	}

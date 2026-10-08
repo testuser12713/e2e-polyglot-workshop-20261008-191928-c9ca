@@ -39,6 +39,15 @@ func Seed(ctx context.Context, store *Store, email, password string) error {
 		return fmt.Errorf("auth: seed employee: %w", err)
 	}
 	log.Printf("auth: seeded employee %s (id %d)", employee.Email, employee.ID)
+
+	// Verify the round trip right after the write so a divergence between the
+	// configured password and the stored hash is diagnosable at seed time
+	// instead of surfacing as a silent 401 at login. Neither the password nor
+	// the hash is ever logged.
+	if err := bcrypt.CompareHashAndPassword([]byte(employee.PasswordHash), []byte(password)); err != nil {
+		log.Printf("auth: WARNING seeded employee %s does not verify the configured password; "+
+			"a login with it will be rejected. Check EMPLOYEE_PASSWORD for stray whitespace or quotes.", employee.Email)
+	}
 	return nil
 }
 
