@@ -31,8 +31,8 @@ ISO-8601 in UTC, und jede Fehlerantwort hat denselben Körper
 docker compose up -d
 ```
 
-Damit laufen PostgreSQL auf `localhost:5432` (Benutzer/Passwort/Datenbank
-`app`/`app`/`app`) und Valkey auf `localhost:6379`.
+Damit laufen PostgreSQL auf `localhost:5432` (Benutzer und Datenbank `app`, die
+Zugangsdaten stehen in `compose.yaml`) und Valkey auf `localhost:6379`.
 
 ## Konfiguration
 
@@ -43,7 +43,7 @@ Variablen einer Klasse zugeordnet (`dev`, `generate` oder `external`).
 | Variable | Pflicht | Standard | Bedeutung |
 | --- | --- | --- | --- |
 | `PORT` | nein | `8080` | Port des HTTP-Servers |
-| `DATABASE_URL` | ja | — | PostgreSQL-Verbindung, z. B. `postgresql://app:app@localhost:5432/app` |
+| `DATABASE_URL` | ja | — | PostgreSQL-Verbindung, z. B. `postgresql://<user>:<password>@localhost:5432/app` |
 | `VALKEY_URL` | ja | — | Valkey-Verbindung, z. B. `redis://localhost:6379/0` |
 | `QUEUE_NAME` | nein | `workshop-invoices` | Valkey-Liste für Rechnungsaufträge |
 | `HOURLY_RATE_CENTS` | nein | `8900` | Stundensatz in Cent für die Rechnung |
@@ -56,7 +56,7 @@ Variablen einer Klasse zugeordnet (`dev`, `generate` oder `external`).
 
 ```bash
 cd backend
-export DATABASE_URL="postgresql://app:app@localhost:5432/app"
+export DATABASE_URL="postgresql://<user>:<password>@localhost:5432/app"
 export VALKEY_URL="redis://localhost:6379/0"
 export AUTH_SECRET="$(openssl rand -hex 32)"
 export EMPLOYEE_EMAIL="meister@example.com"
@@ -81,7 +81,7 @@ Die Tests laufen mit `httptest` gegen eine echte PostgreSQL-Datenbank
 
 ```bash
 cd backend
-DATABASE_URL="postgresql://app:app@localhost:5432/app" go test ./...
+DATABASE_URL="postgresql://<user>:<password>@localhost:5432/app" go test ./...
 ```
 
 ## API-Endpunkte
