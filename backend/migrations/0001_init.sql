@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS invoice_items (
 CREATE TABLE IF NOT EXISTS outbox (
     id              BIGSERIAL PRIMARY KEY,
     order_id        BIGINT REFERENCES orders (id),
-    recipient_email TEXT NOT NULL,
+    recipient       TEXT NOT NULL,
     subject         TEXT NOT NULL,
     body            TEXT NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
