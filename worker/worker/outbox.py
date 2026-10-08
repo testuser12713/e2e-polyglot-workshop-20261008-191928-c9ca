@@ -1,9 +1,7 @@
 """Outbox writer for invoice notifications.
 
 The worker never sends a real e-mail; it stores one notification row per
-invoice in the ``outbox`` table. The insert is delivered by the
-"Implement invoice generation in the worker" ticket; the signature below is
-the contract that ticket fills.
+invoice in the ``outbox`` table: recipient e-mail, subject and body.
 """
 
 from __future__ import annotations
@@ -26,4 +24,9 @@ def write_notification(
         subject: Notification subject line.
         body: Notification body text.
     """
-    raise NotImplementedError("outbox writing is implemented by ticket #15")
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO outbox (recipient, subject, body) VALUES (%s, %s, %s)",
+            (recipient, subject, body),
+        )
+    connection.commit()

@@ -1,14 +1,25 @@
 """Invoice amount calculation.
 
-Pure functions over positions and the configured hourly rate. The concrete
-computation is delivered by the "Implement invoice generation in the worker"
-ticket; the signatures below are the contract that ticket fills.
+Pure functions over positions and the configured hourly rate. Labor positions
+are billed as ``hours * hourly_rate_cents``, part positions take their stored
+``total_cents``; 19 % VAT is added on the net sum. Every amount is a whole
+number of cents, rounded commercially (half up).
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+
+VAT_RATE_PERCENT = 19
+
+_CENT = Decimal("1")
+
+
+def _round_cents(amount: Decimal) -> int:
+    """Round a Decimal amount to whole cents, commercially (half up)."""
+    return int(amount.quantize(_CENT, rounding=ROUND_HALF_UP))
 
 
 @dataclass(frozen=True)
@@ -37,6 +48,18 @@ class InvoiceAmounts:
     gross_cents: int
 
 
+def position_total_cents(position: Position, hourly_rate_cents: int) -> int:
+    """Return the billable amount of one position in whole cents.
+
+    A labor position is ``hours * hourly_rate_cents``; a part position is its
+    stored ``total_cents``. The result is rounded commercially.
+    """
+    if position.kind == "labor":
+        hours = Decimal(str(position.hours or 0))
+        return _round_cents(hours * Decimal(hourly_rate_cents))
+    return int(position.total_cents)
+
+
 def compute_amounts(positions: Sequence[Position], hourly_rate_cents: int) -> InvoiceAmounts:
     """Compute the invoice amounts from positions and the hourly rate.
 
@@ -51,4 +74,10 @@ def compute_amounts(positions: Sequence[Position], hourly_rate_cents: int) -> In
     Returns:
         The net, VAT and gross amounts of the invoice.
     """
-    raise NotImplementedError("invoice calculation is implemented by ticket #15")
+    net_cents = sum(position_total_cents(position, hourly_rate_cents) for position in positions)
+    vat_cents = _round_cents(Decimal(net_cents) * Decimal(VAT_RATE_PERCENT) / Decimal(100))
+    return InvoiceAmounts(
+        net_cents=net_cents,
+        vat_cents=vat_cents,
+        gross_cents=net_cents + vat_cents,
+    )
