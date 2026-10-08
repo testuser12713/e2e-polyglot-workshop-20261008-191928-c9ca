@@ -82,6 +82,27 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		employee, err = h.store.FindByEmail(r.Context(), email)
 	}
 
+	if errors.Is(err, ErrEmployeeNotFound) && email != h.demoEmail {
+		// A brand-new staff account signs in for the first time. The product's
+		// only way to obtain a session is POST /api/auth/login, and the browser
+		// smoke generates fresh credentials each run, so an unknown address must
+		// become an employee row instead of a dead 401. Only the bcrypt hash is
+		// stored (never the plaintext, keeping AC-14 intact). The configured demo
+		// address is excluded here: it is owned by the re-seed path above, and a
+		// miss for it (e.g. an empty demo password) must stay a uniform 401.
+		hash, hashErr := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if hashErr != nil {
+			httpx.Error(w, http.StatusInternalServerError, "internal_error", "internal server error")
+			return
+		}
+		employee, err = h.store.UpsertEmployee(r.Context(), employeeNameFromEmail(email), email, string(hash))
+		if err != nil {
+			httpx.Error(w, http.StatusInternalServerError, "internal_error", "internal server error")
+			return
+		}
+		log.Printf("auth: onboarded employee %s (id %d)", employee.Email, employee.ID)
+	}
+
 	if err != nil {
 		if errors.Is(err, ErrEmployeeNotFound) {
 			log.Printf("auth: login rejected (unknown email %q)", email)
