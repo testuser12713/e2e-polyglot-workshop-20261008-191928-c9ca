@@ -39,6 +39,10 @@ def process_one(config: Config, repository: Repository, queue: MessageQueue) -> 
         logger.warning("order %s (%s) not found; skipping", message.order_id, message.order_number)
         return True
 
+    if repository.has_invoice(order.id):
+        logger.info("order %s already has an invoice; skipping", order.order_number)
+        return True
+
     amounts = compute_amounts(order.positions, config.hourly_rate_cents)
     repository.store_invoice(order, amounts)
     write_notification(
