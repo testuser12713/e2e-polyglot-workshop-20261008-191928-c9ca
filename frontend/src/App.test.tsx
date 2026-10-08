@@ -44,7 +44,7 @@ describe("App route table", () => {
   it("renders the status page at /status", async () => {
     renderAt("/status");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Status und Rechnung" }),
+      await screen.findByRole("heading", { level: 1, name: "Status abrufen" }),
     ).toBeInTheDocument();
   });
 

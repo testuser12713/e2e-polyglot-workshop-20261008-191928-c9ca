@@ -6,7 +6,7 @@ export type OrderStatus =
   | "picked_up";
 
 /** German labels are fixed by Design.md. */
-const STATUS_LABELS: Record<OrderStatus, string> = {
+export const STATUS_LABELS: Record<OrderStatus, string> = {
   requested: "angefragt",
   confirmed: "bestätigt",
   in_progress: "in Arbeit",
