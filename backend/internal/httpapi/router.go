@@ -37,7 +37,7 @@ func NewRouter(cfg config.Config, pool *pgxpool.Pool, publisher queue.Publisher)
 	intakeHandler := order.NewIntakeHandler(orderStore)
 	orderStatusHandler := order.NewStatusHandler(orderStore)
 	orderDetailHandler := order.NewItemsHandler(orderStore)
-	authHandler := auth.NewHandler(authStore, issuer)
+	authHandler := auth.NewHandler(authStore, issuer, cfg.EmployeeEmail, cfg.EmployeePassword)
 
 	workshopListHandler := workshop.NewListHandler(orderStore)
 	workshopConfirmHandler := workshop.NewConfirmHandler(orderStore)

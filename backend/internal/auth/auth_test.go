@@ -96,7 +96,7 @@ func TestSeedStoresOnlyHashAndLoginReturnsToken(t *testing.T) {
 	}
 
 	issuer := auth.NewTokenIssuer("test-secret")
-	handler := auth.NewHandler(store, issuer)
+	handler := auth.NewHandler(store, issuer, "", "")
 
 	body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
@@ -146,7 +146,7 @@ func TestLoginWrongPasswordReturnsUniform401(t *testing.T) {
 		t.Fatalf("seed: %v", err)
 	}
 
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"))
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), "", "")
 	body := fmt.Sprintf(`{"email":%q,"password":"wrong-password"}`, email)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -161,7 +161,7 @@ func TestLoginWrongPasswordReturnsUniform401(t *testing.T) {
 func TestLoginUnknownEmailReturnsUniform401(t *testing.T) {
 	pool := testPool(t)
 	store := auth.NewStore(pool)
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"))
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), "", "")
 
 	body := fmt.Sprintf(`{"email":%q,"password":"whatever"}`, uniqueEmail())
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
@@ -180,7 +180,7 @@ func TestLoginUnknownEmailReturnsUniform401(t *testing.T) {
 func TestLoginEmptyPasswordReturnsUniform401(t *testing.T) {
 	pool := testPool(t)
 	store := auth.NewStore(pool)
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"))
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("test-secret"), "", "")
 
 	body := fmt.Sprintf(`{"email":%q,"password":""}`, uniqueEmail())
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
@@ -481,7 +481,7 @@ func TestSeedRefreshesAccountStoredWithDifferentEmailCase(t *testing.T) {
 		t.Fatalf("employee count for %s = %d, want 1", email, count)
 	}
 
-	handler := auth.NewHandler(store, auth.NewTokenIssuer("case-seed-secret"))
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("case-seed-secret"), "", "")
 	body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
 	rec := httptest.NewRecorder()
 	handler.Login(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
@@ -561,6 +561,142 @@ func TestLoginNormalizesConfiguredCredentialsFromEnvironment(t *testing.T) {
 				t.Fatal("login with normalized credentials returned an empty token")
 			}
 		})
+	}
+}
+
+// postLogin drives handler.Login with the given e-mail and password and returns
+// the recorder, so the spelling-variant and reset tests share one entry point.
+func postLogin(handler *auth.Handler, email, password string) *httptest.ResponseRecorder {
+	body := fmt.Sprintf(`{"email":%q,"password":%q}`, email, password)
+	rec := httptest.NewRecorder()
+	handler.Login(rec, httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body)))
+	return rec
+}
+
+// TestLoginAcceptsSpellingVariantsOfCanonicalEmail pins the canonical form the
+// store writes and looks up: the e-mail may arrive with surrounding whitespace,
+// wrapped in one pair of quotes or with different casing and must still sign
+// in. Only the e-mail is folded; the password stays byte-exact.
+func TestLoginAcceptsSpellingVariantsOfCanonicalEmail(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	store := auth.NewStore(pool)
+	email := uniqueEmail()
+	password := "variant-Passw0rd!"
+	deleteEmployee(t, pool, email)
+	if err := auth.Seed(ctx, store, email, password); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("variant-secret"), email, password)
+
+	variants := []struct {
+		name  string
+		email string
+	}{
+		{name: "plain", email: email},
+		{name: "trailing newline", email: email + "\n"},
+		{name: "leading and trailing whitespace", email: "  " + email + "  "},
+		{name: "double quoted", email: `"` + email + `"`},
+		{name: "single quoted", email: `'` + email + `'`},
+		{name: "quoted and padded", email: " \"" + email + "\" "},
+		{name: "mixed case", email: strings.ToUpper(email)},
+	}
+
+	for _, tc := range variants {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := postLogin(handler, tc.email, password)
+			if rec.Code != http.StatusOK {
+				t.Fatalf("login with %q = %d, want 200; body=%s", tc.email, rec.Code, rec.Body.String())
+			}
+			var resp struct {
+				Token string `json:"token"`
+			}
+			if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+				t.Fatalf("decode login for %q: %v", tc.email, err)
+			}
+			if resp.Token == "" {
+				t.Fatalf("login with %q returned an empty token", tc.email)
+			}
+		})
+	}
+}
+
+// TestLoginWrongPasswordAndForeignEmailStillUniform401 checks that the recovery
+// path does not widen access: a wrong password for the demo account and any
+// foreign e-mail answer the same uniform 401, and a foreign e-mail is never
+// silently seeded.
+func TestLoginWrongPasswordAndForeignEmailStillUniform401(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	store := auth.NewStore(pool)
+	email := uniqueEmail()
+	password := "the-real-Passw0rd!"
+	deleteEmployee(t, pool, email)
+	if err := auth.Seed(ctx, store, email, password); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("uniform-secret"), email, password)
+
+	wrong := postLogin(handler, email, "definitely-wrong")
+	if wrong.Code != http.StatusUnauthorized {
+		t.Fatalf("wrong password = %d, want 401; body=%s", wrong.Code, wrong.Body.String())
+	}
+	assertUniformError(t, wrong.Body.Bytes())
+
+	foreign := uniqueEmail()
+	foreignRec := postLogin(handler, foreign, password)
+	if foreignRec.Code != http.StatusUnauthorized {
+		t.Fatalf("foreign email = %d, want 401; body=%s", foreignRec.Code, foreignRec.Body.String())
+	}
+	assertUniformError(t, foreignRec.Body.Bytes())
+
+	if _, err := store.FindByEmail(ctx, foreign); !errors.Is(err, auth.ErrEmployeeNotFound) {
+		t.Fatalf("foreign email must not be seeded by the recovery path, got err=%v", err)
+	}
+}
+
+// TestLoginReseedsDemoEmployeeAfterDatabaseReset reproduces the office sequence
+// that the two earlier fixes missed: the API is started once and keeps running,
+// while the database is reset between checks. The startup seed's row is gone,
+// so a plain lookup answers 401. The handler must re-run the idempotent seed for
+// the configured demo account and let the documented login through.
+func TestLoginReseedsDemoEmployeeAfterDatabaseReset(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	store := auth.NewStore(pool)
+
+	// The documented demo account, exactly as RUN.json hands it to the API.
+	const demoEmail = "meister@example.com"
+	const demoPassword = "changeme"
+
+	if err := auth.Seed(ctx, store, demoEmail, demoPassword); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	handler := auth.NewHandler(store, auth.NewTokenIssuer("reset-secret"), demoEmail, demoPassword)
+
+	// The office resets/freshens the database while the API keeps running.
+	if _, err := pool.Exec(ctx, `DELETE FROM employees`); err != nil {
+		t.Fatalf("delete employees: %v", err)
+	}
+	if _, err := store.FindByEmail(ctx, demoEmail); !errors.Is(err, auth.ErrEmployeeNotFound) {
+		t.Fatalf("employees must be empty after the reset, got err=%v", err)
+	}
+
+	rec := postLogin(handler, demoEmail, demoPassword)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login after database reset = %d, want 200; body=%s", rec.Code, rec.Body.String())
+	}
+	var resp struct {
+		Token string `json:"token"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode login: %v", err)
+	}
+	if resp.Token == "" {
+		t.Fatal("login after database reset returned an empty token")
 	}
 }
 
