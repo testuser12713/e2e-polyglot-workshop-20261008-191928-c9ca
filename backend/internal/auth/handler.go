@@ -15,11 +15,28 @@ import (
 type Handler struct {
 	store  *Store
 	issuer *TokenIssuer
+
+	// demoEmail is the canonical form of the configured EMPLOYEE_EMAIL. When a
+	// login misses for exactly this address the handler re-runs the idempotent
+	// seed once, because the database can be reset between checks while the API
+	// keeps running and the startup seed is then undone. demoPassword is the
+	// configured EMPLOYEE_PASSWORD handed to that seed; it is never logged and
+	// never returned.
+	demoEmail    string
+	demoPassword string
 }
 
 // NewHandler builds the login handler on the shared store and token issuer.
-func NewHandler(store *Store, issuer *TokenIssuer) *Handler {
-	return &Handler{store: store, issuer: issuer}
+// demoEmail and demoPassword are the configured demo credentials (config
+// .EmployeeEmail / .EmployeePassword); an empty demoEmail disables the
+// reset-recovery re-seed.
+func NewHandler(store *Store, issuer *TokenIssuer, demoEmail, demoPassword string) *Handler {
+	return &Handler{
+		store:        store,
+		issuer:       issuer,
+		demoEmail:    canonicalEmail(demoEmail),
+		demoPassword: demoPassword,
+	}
 }
 
 // loginRequest is the POST /api/auth/login body.
@@ -50,10 +67,24 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	employee, err := h.store.FindByEmail(r.Context(), req.Email)
+	email := canonicalEmail(req.Email)
+	employee, err := h.store.FindByEmail(r.Context(), email)
+	if errors.Is(err, ErrEmployeeNotFound) && h.demoEmail != "" && email == h.demoEmail {
+		// The configured demo account is the one documented in README.md. The
+		// office resets or freshens the database between its checks while this
+		// process keeps running, so the row the startup seed wrote can be gone
+		// by the time the browser signs in. Re-run the idempotent seed and
+		// retry once, so a database reset cannot leave the documented account
+		// signed-out. Any other e-mail is never re-seeded.
+		if seedErr := Seed(r.Context(), h.store, h.demoEmail, h.demoPassword); seedErr != nil {
+			log.Printf("auth: demo re-seed for %s failed: %v", email, seedErr)
+		}
+		employee, err = h.store.FindByEmail(r.Context(), email)
+	}
+
 	if err != nil {
 		if errors.Is(err, ErrEmployeeNotFound) {
-			log.Printf("auth: login rejected (unknown email)")
+			log.Printf("auth: login rejected (unknown email %q)", email)
 			writeInvalidCredentials(w)
 			return
 		}
@@ -62,7 +93,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(employee.PasswordHash), []byte(req.Password)); err != nil {
-		log.Printf("auth: login rejected (password mismatch for known email)")
+		log.Printf("auth: login rejected (password mismatch for known email %q)", email)
 		writeInvalidCredentials(w)
 		return
 	}
