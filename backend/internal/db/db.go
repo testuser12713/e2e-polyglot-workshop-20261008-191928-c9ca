@@ -4,6 +4,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,6 +12,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// migrationsLockKey is the advisory-lock key that serializes migration runs.
+// go test runs packages in parallel and several processes may share one
+// database, and PostgreSQL does not tolerate two concurrent
+// CREATE ... IF NOT EXISTS on the same objects (it can raise a duplicate
+// catalog-key error). A session-level advisory lock makes the whole pass safe.
+const migrationsLockKey int64 = 0x776f726b73686f70 // "workshop"
 
 // Open parses DATABASE_URL, builds a pool and verifies it can reach the
 // database. It never falls back to anything else: PostgreSQL is required.
@@ -50,6 +58,24 @@ const migrationLockKey int64 = 0x776f726b73686f70
 // pg_type/pg_class error. The advisory transaction lock serializes the runs and
 // is released automatically when the transaction ends.
 func RunMigrations(ctx context.Context, pool *pgxpool.Pool, dir string) error {
+	// Hold a session-level advisory lock on a dedicated connection for the
+	// whole pass, so concurrent test processes serialize instead of racing on
+	// the schema_migrations DDL below.
+	lockConn, err := pool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("acquire migration lock connection: %w", err)
+	}
+	defer lockConn.Release()
+	if _, err := lockConn.Exec(ctx, `SELECT pg_advisory_lock($1)`, migrationsLockKey); err != nil {
+		return fmt.Errorf("acquire migration lock: %w", err)
+	}
+	defer func() {
+		if _, err := lockConn.Exec(context.Background(),
+			`SELECT pg_advisory_unlock($1)`, migrationsLockKey); err != nil {
+			log.Printf("release migration lock: %v", err)
+		}
+	}()
+
 	if dir == "" {
 		dir = findMigrationsDir()
 	}

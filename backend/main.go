@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"workshop-api/internal/auth"
 	"workshop-api/internal/config"
 	"workshop-api/internal/db"
 	"workshop-api/internal/httpapi"
@@ -36,6 +37,10 @@ func main() {
 
 	if err := db.RunMigrations(ctx, pool, ""); err != nil {
 		log.Fatalf("migrations: %v", err)
+	}
+
+	if err := auth.Seed(ctx, auth.NewStore(pool), cfg.EmployeeEmail, cfg.EmployeePassword); err != nil {
+		log.Printf("seed employee: %v", err)
 	}
 
 	publisher := queue.NewPublisher(cfg.ValkeyURL, cfg.QueueName)
