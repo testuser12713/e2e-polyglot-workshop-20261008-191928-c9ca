@@ -56,25 +56,37 @@ func (s *Store) FindByEmail(ctx context.Context, email string) (Employee, error)
 // UpsertEmployee inserts an employee or refreshes the stored name and password
 // hash of the one with the same e-mail, so a restart keeps a single account and
 // the configured credentials stay authoritative. Only the hash is ever stored.
+//
+// The lookup in FindByEmail is case-insensitive while a UNIQUE(email) conflict
+// target is not, so an existing row stored with different casing would not be
+// matched by ON CONFLICT and the seed would silently create a second account
+// for the same person; a login might then read the stale one and reject the
+// configured password. The refresh therefore matches on lower(email) and only
+// falls back to an insert when no row exists.
 func (s *Store) UpsertEmployee(ctx context.Context, name, email, passwordHash string) (Employee, error) {
-	const query = `
-		INSERT INTO employees (name, email, password_hash)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (email) DO UPDATE
-			SET name = EXCLUDED.name,
-			    password_hash = EXCLUDED.password_hash
-		RETURNING id, name, email, password_hash`
-
-	// Store one canonical spelling: the lookup in FindByEmail is
-	// case-insensitive, so a mixed-case e-mail here would not conflict with an
-	// existing lower-case row and could leave two accounts a login picks from
-	// arbitrarily.
 	email = strings.ToLower(strings.TrimSpace(email))
 
+	const update = `
+		UPDATE employees
+		SET name = $1, password_hash = $2
+		WHERE lower(email) = lower($3)
+		RETURNING id, name, email, password_hash`
 	var e Employee
-	err := s.DB.QueryRow(ctx, query, name, email, passwordHash).
+	err := s.DB.QueryRow(ctx, update, name, passwordHash, email).
 		Scan(&e.ID, &e.Name, &e.Email, &e.PasswordHash)
-	if err != nil {
+	if err == nil {
+		return e, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return Employee{}, err
+	}
+
+	const insert = `
+		INSERT INTO employees (name, email, password_hash)
+		VALUES ($1, $2, $3)
+		RETURNING id, name, email, password_hash`
+	if err := s.DB.QueryRow(ctx, insert, name, email, passwordHash).
+		Scan(&e.ID, &e.Name, &e.Email, &e.PasswordHash); err != nil {
 		return Employee{}, err
 	}
 	return e, nil

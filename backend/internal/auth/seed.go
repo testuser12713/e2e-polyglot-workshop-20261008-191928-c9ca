@@ -13,53 +13,30 @@ import (
 // part to derive one from.
 const defaultEmployeeName = "Werkstatt"
 
-// The documented demo account, published in README.md ("Starten (Entwicklung)")
-// and used by the workshop login and the browser smoke. It is a published
-// example credential, not a secret, so it is safe to carry here: the demo login
-// must not depend on whether EMPLOYEE_EMAIL/EMPLOYEE_PASSWORD actually reached
-// the process or on the exact value they were given.
-const (
-	DemoEmployeeEmail    = "meister@example.com"
-	DemoEmployeePassword = "changeme"
-)
-
-// Seed provisions the startup employee accounts. The documented demo account is
-// always created or refreshed first, so signing in at /werkstatt/login with the
-// README credentials keeps working no matter how the process was configured —
-// that is the account the browser smoke uses, and it must never diverge from
-// what the seed stored. A separately configured employee (a different e-mail
-// from EMPLOYEE_EMAIL) is provisioned as well, still storing only its bcrypt
-// hash.
+// Seed creates or refreshes the first employee from the configured e-mail and
+// password at startup, storing only the bcrypt hash. When EMPLOYEE_PASSWORD
+// (or the e-mail) is unset it logs a warning and returns without seeding, so
+// the API still starts. The credentials come from the environment (see
+// config.Load); RUN.json carries the documented demo account as a fixed `dev`
+// value, so the /werkstatt/login demo works without any further setup.
 func Seed(ctx context.Context, store *Store, email, password string) error {
-	if err := upsertEmployee(ctx, store, DemoEmployeeEmail, DemoEmployeePassword); err != nil {
-		return fmt.Errorf("auth: seed demo employee: %w", err)
-	}
-
-	email = strings.TrimSpace(email)
-	if email == "" || strings.TrimSpace(password) == "" {
+	if strings.TrimSpace(password) == "" {
+		log.Printf("auth: EMPLOYEE_PASSWORD is not set, skipping employee seed")
 		return nil
 	}
-	if strings.EqualFold(email, DemoEmployeeEmail) {
+	if strings.TrimSpace(email) == "" {
+		log.Printf("auth: EMPLOYEE_EMAIL is not set, skipping employee seed")
 		return nil
 	}
 
-	if err := upsertEmployee(ctx, store, email, password); err != nil {
-		return fmt.Errorf("auth: seed employee %s: %w", email, err)
-	}
-	return nil
-}
-
-// upsertEmployee hashes the password and stores it for the given e-mail,
-// logging which account was provisioned.
-func upsertEmployee(ctx context.Context, store *Store, email, password string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("hash employee password: %w", err)
+		return fmt.Errorf("auth: hash employee password: %w", err)
 	}
 
 	employee, err := store.UpsertEmployee(ctx, employeeNameFromEmail(email), email, string(hash))
 	if err != nil {
-		return fmt.Errorf("seed employee: %w", err)
+		return fmt.Errorf("auth: seed employee: %w", err)
 	}
 	log.Printf("auth: seeded employee %s (id %d)", employee.Email, employee.ID)
 	return nil

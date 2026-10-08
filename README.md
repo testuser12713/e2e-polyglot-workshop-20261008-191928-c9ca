@@ -48,21 +48,22 @@ Variablen einer Klasse zugeordnet (`dev`, `generate` oder `external`).
 | `QUEUE_NAME` | nein | `workshop-invoices` | Valkey-Liste für Rechnungsaufträge |
 | `HOURLY_RATE_CENTS` | nein | `8900` | Stundensatz in Cent für die Rechnung |
 | `AUTH_SECRET` | ja | — | Signatur-Schlüssel der Bearer-Token (wird je Lauf erzeugt) |
-| `EMPLOYEE_EMAIL` | nein | `meister@example.com` | E-Mail eines zusätzlich angelegten Mitarbeiters; die Demo-E-Mail ist immer vorhanden |
-| `EMPLOYEE_PASSWORD` | nein | `changeme` | Klartext-Passwort des zusätzlichen Mitarbeiters; gespeichert wird nur der Hash |
+| `EMPLOYEE_EMAIL` | nein | — | E-Mail des beim Start angelegten Mitarbeiters |
+| `EMPLOYEE_PASSWORD` | nein | — | Klartext-Passwort des Mitarbeiters; gespeichert wird nur der Hash |
 | `CORS_ORIGIN` | nein | `http://localhost:5173` | erlaubte Herkunft der Web-App |
 
 Pflicht sind damit `DATABASE_URL`, `VALKEY_URL` und `AUTH_SECRET`. `EMPLOYEE_EMAIL`
-und `EMPLOYEE_PASSWORD` sind optional. Das dokumentierte Demo-Konto
-`meister@example.com` / `changeme` legt die API bei jedem Start an bzw. auf
-(nur als bcrypt-Hash), damit die Anmeldung an `/werkstatt/login` ohne weitere
-Einrichtung sofort funktioniert. Ein zusätzlich konfigurierter Mitarbeiter mit
-einer anderen E-Mail wird ebenfalls angelegt; für die Demo-E-Mail gilt immer das
-dokumentierte Demo-Passwort.
+und `EMPLOYEE_PASSWORD` sind optional: Fehlen sie, startet die API trotzdem und
+überspringt das Anlegen des Mitarbeiters mit einem Log-Eintrag.
 
-Unter `RUN.json` sind `EMPLOYEE_EMAIL` und `EMPLOYEE_PASSWORD` zusätzlich als
-feste `dev`-Werte hinterlegt. `AUTH_SECRET` bleibt `generate`, wird also bei
-jedem Lauf neu erzeugt.
+Unter `RUN.json` tragen `EMPLOYEE_EMAIL` und `EMPLOYEE_PASSWORD` feste
+`dev`-Werte — das dokumentierte Demo-Konto `meister@example.com` / `changeme`
+aus dem Abschnitt „Starten (Entwicklung)“. Damit funktioniert die Anmeldung
+an `/werkstatt/login` ohne weitere Einrichtung sofort. `AUTH_SECRET` bleibt
+`generate`, wird also bei jedem Lauf neu erzeugt. Die E-Mail wird
+groß-/kleinschreibungsunabhängig gespeichert, sodass der Seed einen bereits
+vorhandenen Mitarbeiter in jedem Fall aktualisiert statt einen zweiten
+anzulegen.
 
 ## Starten (Entwicklung)
 
