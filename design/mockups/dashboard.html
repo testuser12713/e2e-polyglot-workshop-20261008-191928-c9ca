@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+      <button class="icon-btn app-bar__menu" aria-label="Menü öffnen" aria-expanded="false" aria-controls="app-nav" data-od-id="menu-toggle">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+      </button>
+      <nav id="app-nav" class="app-nav" aria-label="Werkstattbereich" data-od-id="app-nav">
+        <a href="dashboard.html" class="nav-link is-active">Dashboard</a>
+        <a href="auftraege.html" class="nav-link">Aufträge</a>
+        <div class="app-nav__user">
+          <span class="app-nav__email">marina.schulz@werkstatt.de</span>
+          <a href="login.html" class="btn btn--ghost" style="min-height: 44px; padding: 10px 16px;" data-od-id="logout">Abmelden</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <div class="page-head__row">
+        <div>
+          <h1 class="page-title" data-od-id="page-title">Dashboard</h1>
+          <p class="page-desc" data-od-id="page-desc">Überblick über die laufenden Aufträge und den Umsatz.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-grid" data-od-id="kpi-grid">
+      <div class="kpi" data-od-id="kpi-open">
+        <div class="kpi__label">Offene Aufträge</div>
+        <div class="kpi__value">4</div>
+        <div class="kpi__delta">angefragt, bestätigt und in Arbeit</div>
+      </div>
+      <div class="kpi" data-od-id="kpi-done-today">
+        <div class="kpi__label">Heute fertig</div>
+        <div class="kpi__value">2</div>
+        <div class="kpi__delta">Stand 12.03.2025</div>
+      </div>
+      <div class="kpi" data-od-id="kpi-revenue">
+        <div class="kpi__label">Umsatz laufender Monat</div>
+        <div class="kpi__value">8.420,00 €</div>
+        <div class="kpi__delta">März 2025</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__header">
+        <h2 class="card__title">Neueste Aufträge</h2>
+        <a href="auftraege.html" class="card__meta" style="color: var(--color-accent);">Alle Aufträge</a>
+      </div>
+
+      <div class="table-wrap" data-od-id="recent-orders-table">
+        <table class="table">
+          <thead>
+            <tr><th>Auftragsnummer</th><th>Kennzeichen</th><th>Kunde</th><th>Status</th><th class="num">Wunschtermin</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0142</a></td>
+              <td class="plate">M-KF 4711</td>
+              <td>Michaela Berger</td>
+              <td><span class="badge badge--requested"><span class="badge__dot"></span>angefragt</span></td>
+              <td class="num tabular">18.03.2025</td>
+            </tr>
+            <tr>
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0141</a></td>
+              <td class="plate">B-KW 2384</td>
+              <td>Thomas Kraus</td>
+              <td><span class="badge badge--confirmed"><span class="badge__dot"></span>bestätigt</span></td>
+              <td class="num tabular">17.03.2025</td>
+            </tr>
+            <tr>
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0140</a></td>
+              <td class="plate">M-AB 9910</td>
+              <td>Familie Hofmann</td>
+              <td><span class="badge badge--in-progress"><span class="badge__dot"></span>in Arbeit</span></td>
+              <td class="num tabular">14.03.2025</td>
+            </tr>
+            <tr>
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0139</a></td>
+              <td class="plate">F-RS 6207</td>
+              <td>Jens Albrecht</td>
+              <td><span class="badge badge--done"><span class="badge__dot"></span>fertig</span></td>
+              <td class="num tabular">12.03.2025</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="order-cards" data-od-id="recent-orders-cards">
+        <div class="order-card">
+          <div class="order-card__line"><span class="order-card__value mono tabular">A-2025-0142</span><span class="badge badge--requested"><span class="badge__dot"></span>angefragt</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">M-KF 4711</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Michaela Berger</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">18.03.2025</span></div>
+        </div>
+        <div class="order-card">
+          <div class="order-card__line"><span class="order-card__value mono tabular">A-2025-0141</span><span class="badge badge--confirmed"><span class="badge__dot"></span>bestätigt</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">B-KW 2384</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Thomas Kraus</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">17.03.2025</span></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+
+  <script>
+    (function () {
+      const menuBtn = document.querySelector('.app-bar__menu');
+      const nav = document.getElementById('app-nav');
+      menuBtn.addEventListener('click', function () {
+        const open = nav.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      });
+    })();
+  </script>
+</body>
+</html>

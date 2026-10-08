@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Übersicht — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <h1 class="page-title" data-od-id="page-title">Übersicht der Bildschirme</h1>
+      <p class="page-desc" data-od-id="page-desc">Klicken Sie sich durch den Kunden- und den geschützten Werkstattbereich. Alle Bildschirme sind untereinander verlinkt.</p>
+    </div>
+
+    <div class="section-gap">
+      <h2 class="card__title" style="margin-bottom: 16px;">Kundenbereich</h2>
+      <div class="kpi-grid">
+        <a href="termin-anfragen.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-termin-anfragen">
+          <div class="card__title" style="margin-bottom: 8px;">Termin anfragen</div>
+          <p class="muted" style="font-size: 14px;">Kunde und Fahrzeug anlegen, Wunschtermin und Problembeschreibung übermitteln.</p>
+        </a>
+        <a href="status-abruf.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-status-abruf">
+          <div class="card__title" style="margin-bottom: 8px;">Status abrufen</div>
+          <p class="muted" style="font-size: 14px;">Status und Verlauf per Auftragsnummer und Kennzeichen, inkl. Rechnung.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="section-gap">
+      <h2 class="card__title" style="margin-bottom: 16px;">Werkstattbereich (geschützt)</h2>
+      <div class="kpi-grid">
+        <a href="login.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-login">
+          <div class="card__title" style="margin-bottom: 8px;">Anmeldung</div>
+          <p class="muted" style="font-size: 14px;">E-Mail und Passwort, Token-basierter Zugang zum Werkstattbereich.</p>
+        </a>
+        <a href="dashboard.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-dashboard">
+          <div class="card__title" style="margin-bottom: 8px;">Dashboard</div>
+          <p class="muted" style="font-size: 14px;">Offene Aufträge, heute fertig und Umsatz des laufenden Monats.</p>
+        </a>
+        <a href="auftraege.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-auftraege">
+          <div class="card__title" style="margin-bottom: 8px;">Aufträge</div>
+          <p class="muted" style="font-size: 14px;">Liste mit Statusfilter, Kennzeichensuche und Bestätigen-Aktion.</p>
+        </a>
+        <a href="auftrag-detail.html" class="card" style="text-decoration: none; color: var(--color-fg);" data-od-id="link-auftrag-detail">
+          <div class="card__title" style="margin-bottom: 8px;">Auftragsansicht</div>
+          <p class="muted" style="font-size: 14px;">Positionen erfassen, Summen, Verlauf und nächster Status.</p>
+        </a>
+      </div>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+</body>
+</html>

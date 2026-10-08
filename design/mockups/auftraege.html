@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aufträge — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+      <button class="icon-btn app-bar__menu" aria-label="Menü öffnen" aria-expanded="false" aria-controls="app-nav" data-od-id="menu-toggle">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+      </button>
+      <nav id="app-nav" class="app-nav" aria-label="Werkstattbereich" data-od-id="app-nav">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="auftraege.html" class="nav-link is-active">Aufträge</a>
+        <div class="app-nav__user">
+          <span class="app-nav__email">marina.schulz@werkstatt.de</span>
+          <a href="login.html" class="btn btn--ghost" style="min-height: 44px; padding: 10px 16px;" data-od-id="logout">Abmelden</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <h1 class="page-title" data-od-id="page-title">Aufträge</h1>
+      <p class="page-desc" data-od-id="page-desc">Alle Werkstattaufträge mit Statusfilter und Kennzeichensuche.</p>
+    </div>
+
+    <div class="filterbar" data-od-id="filterbar">
+      <div class="filterbar__chips" role="group" aria-label="Nach Status filtern">
+        <button class="chip is-active" data-status="all" data-od-id="chip-all">Alle</button>
+        <button class="chip" data-status="requested">angefragt</button>
+        <button class="chip" data-status="confirmed">bestätigt</button>
+        <button class="chip" data-status="in_progress">in Arbeit</button>
+        <button class="chip" data-status="done">fertig</button>
+        <button class="chip" data-status="picked_up">abgeholt</button>
+      </div>
+      <div class="filterbar__search">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4" stroke-linecap="round"/></svg>
+        <input class="field__control plate" id="search" type="text" placeholder="Kennzeichen suchen…" aria-label="Kennzeichen suchen" autocomplete="off" data-od-id="search-input">
+      </div>
+      <div class="active-filters" id="active-filters" data-od-id="active-filters">
+        <button class="btn btn--ghost" id="reset-filters" style="min-height: 44px; padding: 12px 14px;" data-od-id="reset-filters">Filter zurücksetzen</button>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state" hidden data-od-id="empty-state">
+      <p>Keine Aufträge für diesen Filter</p>
+      <button class="btn btn--primary" id="empty-reset" data-od-id="empty-reset">Filter zurücksetzen</button>
+    </div>
+
+    <div class="card" id="list-wrap" style="padding: 0; overflow: hidden;" data-od-id="order-list">
+      <div class="table-wrap" data-od-id="order-table">
+        <table class="table">
+          <thead>
+            <tr><th>Auftragsnummer</th><th>Kennzeichen</th><th>Kunde</th><th>Status</th><th class="num">Wunschtermin</th><th>Aktionen</th></tr>
+          </thead>
+          <tbody>
+            <tr class="order-row" data-status="requested" data-plate="M-KF 4711" data-no="A-2025-0142">
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0142</a></td>
+              <td class="plate">M-KF 4711</td>
+              <td>Michaela Berger</td>
+              <td><span class="badge badge--requested"><span class="badge__dot"></span><span class="status-label">angefragt</span></span></td>
+              <td class="num tabular">18.03.2025</td>
+              <td><div class="page-actions" style="gap: 4px;"><button class="btn btn--secondary btn-confirm" style="min-height: 44px; padding: 12px 16px;">Bestätigen</button><a class="btn btn--ghost" style="min-height: 44px; padding: 12px 16px;" href="auftrag-detail.html">Details</a></div></td>
+            </tr>
+            <tr class="order-row" data-status="confirmed" data-plate="B-KW 2384" data-no="A-2025-0141">
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0141</a></td>
+              <td class="plate">B-KW 2384</td>
+              <td>Thomas Kraus</td>
+              <td><span class="badge badge--confirmed"><span class="badge__dot"></span><span class="status-label">bestätigt</span></span></td>
+              <td class="num tabular">17.03.2025</td>
+              <td><a class="btn btn--ghost" style="min-height: 44px; padding: 12px 16px;" href="auftrag-detail.html">Details</a></td>
+            </tr>
+            <tr class="order-row" data-status="in_progress" data-plate="M-AB 9910" data-no="A-2025-0140">
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0140</a></td>
+              <td class="plate">M-AB 9910</td>
+              <td>Familie Hofmann</td>
+              <td><span class="badge badge--in-progress"><span class="badge__dot"></span><span class="status-label">in Arbeit</span></span></td>
+              <td class="num tabular">14.03.2025</td>
+              <td><a class="btn btn--ghost" style="min-height: 44px; padding: 12px 16px;" href="auftrag-detail.html">Details</a></td>
+            </tr>
+            <tr class="order-row" data-status="done" data-plate="F-RS 6207" data-no="A-2025-0139">
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0139</a></td>
+              <td class="plate">F-RS 6207</td>
+              <td>Jens Albrecht</td>
+              <td><span class="badge badge--done"><span class="badge__dot"></span><span class="status-label">fertig</span></span></td>
+              <td class="num tabular">12.03.2025</td>
+              <td><a class="btn btn--ghost" style="min-height: 44px; padding: 12px 16px;" href="auftrag-detail.html">Details</a></td>
+            </tr>
+            <tr class="order-row" data-status="picked_up" data-plate="HH-AD 7755" data-no="A-2025-0138">
+              <td><a class="mono tabular" href="auftrag-detail.html">A-2025-0138</a></td>
+              <td class="plate">HH-AD 7755</td>
+              <td>Sabine Roth</td>
+              <td><span class="badge badge--picked-up"><span class="badge__dot"></span><span class="status-label">abgeholt</span></span></td>
+              <td class="num tabular">09.03.2025</td>
+              <td><a class="btn btn--ghost" style="min-height: 44px; padding: 12px 16px;" href="auftrag-detail.html">Details</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="order-cards" data-od-id="order-cards">
+        <div class="order-card order-row" data-status="requested" data-plate="M-KF 4711" data-no="A-2025-0142">
+          <div class="order-card__line"><a class="order-card__value mono tabular" href="auftrag-detail.html">A-2025-0142</a><span class="badge badge--requested"><span class="badge__dot"></span><span class="status-label">angefragt</span></span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">M-KF 4711</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Michaela Berger</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">18.03.2025</span></div>
+          <div class="order-card__actions"><button class="btn btn--secondary btn-confirm" style="flex: 1;">Bestätigen</button><a class="btn btn--ghost" href="auftrag-detail.html">Details</a></div>
+        </div>
+        <div class="order-card order-row" data-status="confirmed" data-plate="B-KW 2384" data-no="A-2025-0141">
+          <div class="order-card__line"><a class="order-card__value mono tabular" href="auftrag-detail.html">A-2025-0141</a><span class="badge badge--confirmed"><span class="badge__dot"></span><span class="status-label">bestätigt</span></span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">B-KW 2384</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Thomas Kraus</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">17.03.2025</span></div>
+          <div class="order-card__actions"><a class="btn btn--secondary" style="flex: 1;" href="auftrag-detail.html">Details</a></div>
+        </div>
+        <div class="order-card order-row" data-status="in_progress" data-plate="M-AB 9910" data-no="A-2025-0140">
+          <div class="order-card__line"><a class="order-card__value mono tabular" href="auftrag-detail.html">A-2025-0140</a><span class="badge badge--in-progress"><span class="badge__dot"></span><span class="status-label">in Arbeit</span></span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">M-AB 9910</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Familie Hofmann</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">14.03.2025</span></div>
+          <div class="order-card__actions"><a class="btn btn--secondary" style="flex: 1;" href="auftrag-detail.html">Details</a></div>
+        </div>
+        <div class="order-card order-row" data-status="done" data-plate="F-RS 6207" data-no="A-2025-0139">
+          <div class="order-card__line"><a class="order-card__value mono tabular" href="auftrag-detail.html">A-2025-0139</a><span class="badge badge--done"><span class="badge__dot"></span><span class="status-label">fertig</span></span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">F-RS 6207</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Jens Albrecht</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">12.03.2025</span></div>
+          <div class="order-card__actions"><a class="btn btn--secondary" style="flex: 1;" href="auftrag-detail.html">Details</a></div>
+        </div>
+        <div class="order-card order-row" data-status="picked_up" data-plate="HH-AD 7755" data-no="A-2025-0138">
+          <div class="order-card__line"><a class="order-card__value mono tabular" href="auftrag-detail.html">A-2025-0138</a><span class="badge badge--picked-up"><span class="badge__dot"></span><span class="status-label">abgeholt</span></span></div>
+          <div class="order-card__line"><span class="order-card__label">Kennzeichen</span><span class="order-card__value plate">HH-AD 7755</span></div>
+          <div class="order-card__line"><span class="order-card__label">Kunde</span><span class="order-card__value">Sabine Roth</span></div>
+          <div class="order-card__line"><span class="order-card__label">Wunschtermin</span><span class="order-card__value tabular">09.03.2025</span></div>
+          <div class="order-card__actions"><a class="btn btn--secondary" style="flex: 1;" href="auftrag-detail.html">Details</a></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+
+  <div class="overlay" id="confirm-overlay" hidden data-od-id="confirm-overlay">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title" data-od-id="confirm-dialog">
+      <h2 class="dialog__title" id="confirm-title">Auftrag bestätigen</h2>
+      <p class="dialog__body" id="confirm-body">Auftrag bestätigen?</p>
+      <div class="dialog__actions">
+        <button class="btn btn--secondary" id="confirm-cancel">Abbrechen</button>
+        <button class="btn btn--primary" id="confirm-ok">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden role="status" data-od-id="toast">
+    <span id="toast-text"></span>
+    <button class="icon-btn" id="toast-close" aria-label="Schließen">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <script>
+    (function () {
+      var menuBtn = document.querySelector('.app-bar__menu');
+      var nav = document.getElementById('app-nav');
+      menuBtn.addEventListener('click', function () {
+        var open = nav.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      });
+
+      var rows = Array.prototype.slice.call(document.querySelectorAll('.order-row'));
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+      var search = document.getElementById('search');
+      var activeFilters = document.getElementById('active-filters');
+      var resetBtn = document.getElementById('reset-filters');
+      var emptyState = document.getElementById('empty-state');
+      var emptyReset = document.getElementById('empty-reset');
+      var listWrap = document.getElementById('list-wrap');
+
+      var currentStatus = 'all';
+      var searchTerm = '';
+
+      function applyFilters() {
+        var visible = 0;
+        rows.forEach(function (row) {
+          var matchStatus = currentStatus === 'all' || row.dataset.status === currentStatus;
+          var plate = row.dataset.plate.toLowerCase();
+          var matchSearch = searchTerm === '' || plate.indexOf(searchTerm) !== -1;
+          var show = matchStatus && matchSearch;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        emptyState.hidden = visible > 0;
+        listWrap.style.display = visible > 0 ? '' : 'none';
+        renderActiveFilters();
+      }
+
+      function renderActiveFilters() {
+        var nodes = [];
+        if (currentStatus !== 'all') {
+          var label = chips.filter(function (c) { return c.dataset.status === currentStatus; })[0].textContent;
+          nodes.push(makeChip('Status: ' + label, function () { setStatus('all'); }));
+        }
+        if (searchTerm !== '') {
+          nodes.push(makeChip('Kennzeichen: ' + searchTerm.toUpperCase(), function () { search.value = ''; searchTerm = ''; applyFilters(); }));
+        }
+        var existing = activeFilters.querySelectorAll('.active-filter-chip');
+        existing.forEach(function (el) { el.remove(); });
+        nodes.forEach(function (n) { activeFilters.insertBefore(n, resetBtn); });
+      }
+
+      function makeChip(label, onRemove) {
+        var chip = document.createElement('span');
+        chip.className = 'active-filter-chip';
+        chip.textContent = label;
+        var btn = document.createElement('button');
+        btn.className = 'icon-btn';
+        btn.setAttribute('aria-label', label + ' entfernen');
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>';
+        btn.addEventListener('click', onRemove);
+        chip.appendChild(btn);
+        return chip;
+      }
+
+      function setStatus(status) {
+        currentStatus = status;
+        chips.forEach(function (c) {
+          c.classList.toggle('is-active', c.dataset.status === status);
+        });
+        applyFilters();
+      }
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () { setStatus(chip.dataset.status); });
+      });
+
+      var debounce;
+      search.addEventListener('input', function () {
+        clearTimeout(debounce);
+        var value = search.value;
+        debounce = setTimeout(function () {
+          searchTerm = value.toLowerCase().replace(/\s+/g, ' ').trim();
+          applyFilters();
+        }, 250);
+      });
+
+      function resetAll() {
+        setStatus('all');
+        search.value = '';
+        searchTerm = '';
+        applyFilters();
+      }
+
+      resetBtn.addEventListener('click', resetAll);
+      emptyReset.addEventListener('click', resetAll);
+
+      // Confirmation dialog for "Bestätigen"
+      var overlay = document.getElementById('confirm-overlay');
+      var confirmBody = document.getElementById('confirm-body');
+      var confirmOk = document.getElementById('confirm-ok');
+      var confirmCancel = document.getElementById('confirm-cancel');
+      var currentRow = null;
+
+      Array.prototype.slice.call(document.querySelectorAll('.btn-confirm')).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentRow = btn.closest('.order-row');
+          confirmBody.textContent = 'Auftrag ' + currentRow.dataset.no + ' bestätigen? Danach kann er in Arbeit genommen werden.';
+          overlay.hidden = false;
+        });
+      });
+
+      confirmCancel.addEventListener('click', function () { overlay.hidden = true; });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.hidden = true; });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !overlay.hidden) overlay.hidden = true; });
+
+      confirmOk.addEventListener('click', function () {
+        if (!currentRow) return;
+        currentRow.dataset.status = 'confirmed';
+        var badge = currentRow.querySelector('.badge');
+        if (badge) {
+          badge.className = 'badge badge--confirmed';
+          var dot = badge.querySelector('.badge__dot');
+          var label = badge.querySelector('.status-label');
+          if (label) label.textContent = 'bestätigt';
+        }
+        var confirmBtns = currentRow.querySelectorAll('.btn-confirm');
+        Array.prototype.slice.call(confirmBtns).forEach(function (b) { b.hidden = true; });
+        overlay.hidden = true;
+        showToast('Auftrag ' + currentRow.dataset.no + ' bestätigt');
+        currentRow = null;
+      });
+
+      // Toast
+      var toast = document.getElementById('toast');
+      var toastText = document.getElementById('toast-text');
+      var toastClose = document.getElementById('toast-close');
+      var toastTimer;
+
+      function showToast(msg) {
+        toastText.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 4000);
+      }
+
+      toastClose.addEventListener('click', function () { toast.hidden = true; });
+
+      applyFilters();
+    })();
+  </script>
+</body>
+</html>

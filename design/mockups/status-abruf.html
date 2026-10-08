@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status abrufen — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+      <button class="icon-btn app-bar__menu" aria-label="Menü öffnen" aria-expanded="false" aria-controls="app-nav" data-od-id="menu-toggle">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+      </button>
+      <nav id="app-nav" class="app-nav" aria-label="Kundenbereich" data-od-id="app-nav">
+        <a href="termin-anfragen.html" class="nav-link">Termin anfragen</a>
+        <a href="status-abruf.html" class="nav-link is-active">Status abrufen</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <h1 class="page-title" data-od-id="page-title">Status abrufen</h1>
+      <p class="page-desc" data-od-id="page-desc">Geben Sie Ihre Auftragsnummer und das Kennzeichen ein, um den Bearbeitungsstand und — sobald fertig — Ihre Rechnung zu sehen.</p>
+    </div>
+
+    <div class="card" style="max-width: 720px;">
+      <form id="lookup-form" novalidate data-od-id="lookup-form">
+        <div class="form-row">
+          <div class="field">
+            <label class="field__label" for="order-no">Auftragsnummer</label>
+            <input class="field__control mono" id="order-no" name="orderNo" type="text" placeholder="A-2025-0139" autocomplete="off">
+            <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte Auftragsnummer angeben.</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="plate">Kennzeichen</label>
+            <input class="field__control plate" id="plate" name="plate" type="text" maxlength="10" placeholder="F-RS 6207" autocomplete="off" style="text-transform: uppercase;">
+            <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte Kennzeichen angeben.</span>
+          </div>
+        </div>
+
+        <div id="lookup-error" hidden>
+          <div class="banner banner--danger" role="alert" data-od-id="lookup-error-banner">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>
+            <div class="banner__body">
+              Auftrag mit dieser Auftragsnummer und diesem Kennzeichen wurde nicht gefunden.
+              <span class="banner__code">Code: order_not_found</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-actions" style="margin-top: 4px;">
+          <button type="submit" class="btn btn--primary btn--block-mobile" data-od-id="lookup-submit">Status abrufen</button>
+        </div>
+        <p class="field__helper" style="margin-top: 8px;">Zum Ausprobieren: <span class="mono">A-2025-0139</span> · <span class="mono plate">F-RS 6207</span></p>
+      </form>
+    </div>
+
+    <div id="result" hidden style="margin-top: 24px;">
+      <div class="two-col">
+        <div class="stack">
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">Status</h2>
+              <span class="card__meta"><span class="mono tabular">A-2025-0139</span> · <span class="mono plate">F-RS 6207</span></span>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <span class="badge badge--done" data-od-id="status-badge"><span class="badge__dot"></span>fertig</span>
+            </div>
+            <div style="font-size: 14px; color: var(--color-fg-muted); margin-bottom: 16px;">
+              Ihr Fahrzeug ist fertig und kann abgeholt werden.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title">Verlauf</h2>
+            </div>
+            <ol class="timeline" data-od-id="status-timeline">
+              <li class="timeline__item">
+                <span class="timeline__rail"><span class="timeline__dot timeline__dot--requested"></span><span class="timeline__connector"></span></span>
+                <span class="timeline__content"><span class="timeline__label">angefragt</span><span class="timeline__time" style="float: right;">05.03.2025, 09:14</span></span>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__rail"><span class="timeline__dot timeline__dot--confirmed"></span><span class="timeline__connector"></span></span>
+                <span class="timeline__content"><span class="timeline__label">bestätigt</span><span class="timeline__time" style="float: right;">05.03.2025, 11:30</span></span>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__rail"><span class="timeline__dot timeline__dot--in-progress"></span><span class="timeline__connector"></span></span>
+                <span class="timeline__content"><span class="timeline__label">in Arbeit</span><span class="timeline__time" style="float: right;">11.03.2025, 08:05</span></span>
+              </li>
+              <li class="timeline__item">
+                <span class="timeline__rail"><span class="timeline__dot timeline__dot--done"></span><span class="timeline__connector"></span></span>
+                <span class="timeline__content"><span class="timeline__label">fertig</span><span class="timeline__time" style="float: right;">12.03.2025, 15:42</span></span>
+              </li>
+              <li class="timeline__item timeline__item--future">
+                <span class="timeline__rail"><span class="timeline__dot timeline__dot--future"></span><span class="timeline__connector"></span></span>
+                <span class="timeline__content"><span class="timeline__label">abgeholt</span></span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="invoice__head">
+            <h2 class="invoice__title">Rechnung</h2>
+            <div class="invoice__meta">
+              <div class="mono tabular">A-2025-0139</div>
+              <div class="mono plate">F-RS 6207</div>
+            </div>
+          </div>
+
+          <div class="scroll-table">
+            <table class="line-items">
+              <thead>
+                <tr><th>Bezeichnung</th><th class="num">Menge</th><th class="num">Einzelpreis</th><th class="num">Summe</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Arbeitszeit — Bremsenservice</td>
+                  <td class="num tabular">2,5 Std.</td>
+                  <td class="num tabular">92,00 €</td>
+                  <td class="num tabular">230,00 €</td>
+                </tr>
+                <tr>
+                  <td>Bremsbeläge vorn</td>
+                  <td class="num tabular">1</td>
+                  <td class="num tabular">84,50 €</td>
+                  <td class="num tabular">84,50 €</td>
+                </tr>
+                <tr>
+                  <td>Bremsflüssigkeit DOT 4</td>
+                  <td class="num tabular">1</td>
+                  <td class="num tabular">12,90 €</td>
+                  <td class="num tabular">12,90 €</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="totals">
+            <div class="totals__row"><span>Netto</span><span class="num tabular">327,40 €</span></div>
+            <div class="totals__row"><span>MwSt. 19 %</span><span class="num tabular">62,21 €</span></div>
+            <div class="totals__row totals__row--grand"><span>Brutto</span><span class="num tabular">389,61 €</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+
+  <script>
+    (function () {
+      const menuBtn = document.querySelector('.app-bar__menu');
+      const nav = document.getElementById('app-nav');
+      menuBtn.addEventListener('click', function () {
+        const open = nav.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      });
+
+      const form = document.getElementById('lookup-form');
+      const orderNo = document.getElementById('order-no');
+      const plate = document.getElementById('plate');
+      const errorBox = document.getElementById('lookup-error');
+      const result = document.getElementById('result');
+
+      orderNo.addEventListener('input', function () {
+        this.value = this.value.toUpperCase();
+      });
+
+      function normalizePlate(v) {
+        return v.toUpperCase().replace(/\s+/g, ' ').trim();
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const noOk = orderNo.value.trim().length > 0;
+        const plateOk = plate.value.trim().length > 0;
+        orderNo.closest('.field').classList.toggle('is-invalid', !noOk);
+        plate.closest('.field').classList.toggle('is-invalid', !plateOk);
+        if (!noOk || !plateOk) { errorBox.hidden = true; result.hidden = true; return; }
+
+        const match = orderNo.value.trim().toUpperCase() === 'A-2025-0139' &&
+                      normalizePlate(plate.value) === 'F-RS 6207';
+        errorBox.hidden = match;
+        result.hidden = !match;
+        if (match) {
+          window.scrollTo({ top: result.offsetTop - 20, behavior: 'smooth' });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auftrag A-2025-0140 — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+      <button class="icon-btn app-bar__menu" aria-label="Menü öffnen" aria-expanded="false" aria-controls="app-nav" data-od-id="menu-toggle">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+      </button>
+      <nav id="app-nav" class="app-nav" aria-label="Werkstattbereich" data-od-id="app-nav">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="auftraege.html" class="nav-link is-active">Aufträge</a>
+        <div class="app-nav__user">
+          <span class="app-nav__email">marina.schulz@werkstatt.de</span>
+          <a href="login.html" class="btn btn--ghost" style="min-height: 44px; padding: 10px 16px;" data-od-id="logout">Abmelden</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <div class="page-head__row">
+        <div>
+          <h1 class="page-title mono tabular" data-od-id="page-title">A-2025-0140</h1>
+          <p class="page-desc" data-od-id="page-desc"><span class="plate">M-AB 9910</span> · Zahnriemenwechsel · Familie Hofmann</p>
+        </div>
+        <div class="page-actions" style="align-items: center;">
+          <span class="badge badge--in-progress" id="status-badge" data-od-id="status-badge"><span class="badge__dot"></span><span id="status-label">in Arbeit</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="stack">
+        <div class="card" data-od-id="positions-card">
+          <div class="card__header">
+            <h2 class="card__title">Positionen</h2>
+            <button class="btn btn--secondary" id="add-position" style="min-height: 44px; padding: 12px 16px;" data-od-id="add-position">Position hinzufügen</button>
+          </div>
+
+          <div class="scroll-table">
+            <table class="line-items" data-od-id="line-items">
+              <thead>
+                <tr><th>Bezeichnung</th><th class="num">Menge</th><th class="num">Einzelpreis</th><th class="num">Summe</th><th></th></tr>
+              </thead>
+              <tbody id="line-items-body">
+              <tr data-type="labour" data-name="Arbeitszeit — Zahnriemenwechsel" data-qty-raw="4,0" data-price-raw="92,00" data-amount="36800">
+                <td>Arbeitszeit — Zahnriemenwechsel</td>
+                <td class="num tabular">4,0 Std.</td>
+                <td class="num tabular">92,00 €</td>
+                <td class="num tabular">368,00 €</td>
+                <td style="width: 96px;">
+                  <button class="icon-btn btn-edit" aria-label="Position bearbeiten"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13.5l-.5 3 3-.5L15 7.5 12.5 5 4 13.5z" stroke-linejoin="round"/></svg></button>
+                  <button class="icon-btn btn-delete" aria-label="Position löschen"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </td>
+              </tr>
+              <tr data-type="part" data-name="Zahnriemensatz" data-qty-raw="1" data-price-raw="189,00" data-amount="18900">
+                <td>Zahnriemensatz</td>
+                <td class="num tabular">1</td>
+                <td class="num tabular">189,00 €</td>
+                <td class="num tabular">189,00 €</td>
+                <td style="width: 96px;">
+                  <button class="icon-btn btn-edit" aria-label="Position bearbeiten"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13.5l-.5 3 3-.5L15 7.5 12.5 5 4 13.5z" stroke-linejoin="round"/></svg></button>
+                  <button class="icon-btn btn-delete" aria-label="Position löschen"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </td>
+              </tr>
+              <tr data-type="part" data-name="Wasserpumpe" data-qty-raw="1" data-price-raw="74,50" data-amount="7450">
+                <td>Wasserpumpe</td>
+                <td class="num tabular">1</td>
+                <td class="num tabular">74,50 €</td>
+                <td class="num tabular">74,50 €</td>
+                <td style="width: 96px;">
+                  <button class="icon-btn btn-edit" aria-label="Position bearbeiten"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13.5l-.5 3 3-.5L15 7.5 12.5 5 4 13.5z" stroke-linejoin="round"/></svg></button>
+                  <button class="icon-btn btn-delete" aria-label="Position löschen"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </td>
+              </tr>
+            </tbody>
+            </table>
+          </div>
+
+          <div class="totals" data-od-id="totals">
+            <div class="totals__row"><span>Netto</span><span class="num tabular" id="total-netto">631,50 €</span></div>
+            <div class="totals__row"><span>MwSt. 19 %</span><span class="num tabular" id="total-mwst">119,99 €</span></div>
+            <div class="totals__row totals__row--grand"><span>Brutto</span><span class="num tabular" id="total-brutto">751,49 €</span></div>
+          </div>
+
+          <div id="editor" hidden style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+            <div class="form-row">
+              <div class="field">
+                <label class="field__label" for="pos-type">Art</label>
+                <select class="field__control" id="pos-type">
+                  <option value="part">Teil</option>
+                  <option value="labour">Arbeitszeit</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="pos-name">Bezeichnung</label>
+                <input class="field__control" id="pos-name" type="text" placeholder="z. B. Ölfilter">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label class="field__label" for="pos-qty" id="pos-qty-label">Menge</label>
+                <input class="field__control tabular" id="pos-qty" type="text" inputmode="decimal" placeholder="1">
+              </div>
+              <div class="field">
+                <label class="field__label" for="pos-price">Einzelpreis (€)</label>
+                <input class="field__control tabular" id="pos-price" type="text" inputmode="decimal" placeholder="45,00">
+              </div>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn--primary" id="pos-save" style="min-height: 44px; padding: 12px 16px;">Speichern</button>
+              <button class="btn btn--secondary" id="pos-cancel" style="min-height: 44px; padding: 12px 16px;">Abbrechen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card" data-od-id="status-card">
+          <div class="card__header">
+            <h2 class="card__title">Status</h2>
+          </div>
+          <p class="muted" style="font-size: 14px; margin-bottom: 16px;">Nächster erlaubter Schritt: <strong style="color: var(--color-fg);">fertig</strong>.</p>
+          <button class="btn btn--primary btn--block" id="next-status" data-od-id="next-status">Fertig setzen</button>
+        </div>
+
+        <div class="card" data-od-id="history-card">
+          <div class="card__header">
+            <h2 class="card__title">Verlauf</h2>
+          </div>
+          <ol class="timeline" data-od-id="status-timeline">
+            <li class="timeline__item">
+              <span class="timeline__rail"><span class="timeline__dot timeline__dot--requested"></span><span class="timeline__connector"></span></span>
+              <span class="timeline__content"><span class="timeline__label">angefragt</span><span class="timeline__time" style="float: right;">10.03.2025, 08:22</span></span>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__rail"><span class="timeline__dot timeline__dot--confirmed"></span><span class="timeline__connector"></span></span>
+              <span class="timeline__content"><span class="timeline__label">bestätigt</span><span class="timeline__time" style="float: right;">10.03.2025, 14:05</span></span>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__rail"><span class="timeline__dot timeline__dot--in-progress"></span><span class="timeline__connector"></span></span>
+              <span class="timeline__content"><span class="timeline__label">in Arbeit</span><span class="timeline__time" style="float: right;">13.03.2025, 07:58</span></span>
+            </li>
+            <li class="timeline__item timeline__item--future" id="timeline-done">
+              <span class="timeline__rail"><span class="timeline__dot timeline__dot--future"></span><span class="timeline__connector"></span></span>
+              <span class="timeline__content"><span class="timeline__label">fertig</span></span>
+            </li>
+            <li class="timeline__item timeline__item--future" id="timeline-picked-up">
+              <span class="timeline__rail"><span class="timeline__dot timeline__dot--future"></span><span class="timeline__connector"></span></span>
+              <span class="timeline__content"><span class="timeline__label">abgeholt</span></span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card" data-od-id="vehicle-card">
+          <div class="card__header">
+            <h2 class="card__title">Fahrzeug & Kunde</h2>
+          </div>
+          <div style="font-size: 14px; color: var(--color-fg); display: flex; flex-direction: column; gap: 8px;">
+            <div><span class="muted">Kunde:</span> Familie Hofmann</div>
+            <div><span class="muted">Telefon:</span> 0151 7788990</div>
+            <div><span class="muted">Fahrzeug:</span> Audi A4 Avant</div>
+            <div><span class="muted">Kennzeichen:</span> <span class="plate">M-AB 9910</span></div>
+            <div><span class="muted">Kilometerstand:</span> <span class="tabular">154.980 km</span></div>
+            <div><span class="muted">Wunschtermin:</span> <span class="tabular">14.03.2025</span></div>
+            <div><span class="muted">Anliegen:</span> Zahnriemenwechsel inkl. Wasserpumpe, laut Serviceheft fällig.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+
+  <div class="overlay" id="confirm-overlay" hidden data-od-id="confirm-overlay">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title" data-od-id="confirm-dialog">
+      <h2 class="dialog__title" id="confirm-title">Status ändern</h2>
+      <p class="dialog__body" id="confirm-body">Status auf „fertig“ setzen?</p>
+      <div class="dialog__actions">
+        <button class="btn btn--secondary" id="confirm-cancel">Abbrechen</button>
+        <button class="btn btn--primary" id="confirm-ok">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="delete-overlay" hidden data-od-id="delete-overlay">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" data-od-id="delete-dialog">
+      <h2 class="dialog__title" id="delete-title">Position löschen</h2>
+      <p class="dialog__body" id="delete-body">Diese Position wirklich löschen?</p>
+      <div class="dialog__actions">
+        <button class="btn btn--secondary" id="delete-cancel">Abbrechen</button>
+        <button class="btn btn--danger" id="delete-ok">Löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden role="status" data-od-id="toast">
+    <span id="toast-text"></span>
+    <button class="icon-btn" id="toast-close" aria-label="Schließen">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <script>
+    (function () {
+      var menuBtn = document.querySelector('.app-bar__menu');
+      var nav = document.getElementById('app-nav');
+      menuBtn.addEventListener('click', function () {
+        var open = nav.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      });
+
+      function formatCents(cents) {
+        var neg = cents < 0 ? '-' : '';
+        cents = Math.abs(Math.round(cents));
+        var euro = Math.floor(cents / 100);
+        var c = cents % 100;
+        var s = String(euro);
+        var out = '';
+        while (s.length > 3) { out = '.' + s.slice(-3) + out; s = s.slice(0, -3); }
+        out = s + out;
+        return neg + out + ',' + (c < 10 ? '0' + c : c) + ' €';
+      }
+
+      function parseEuro(s) {
+        s = String(s).replace(/€/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+        var v = parseFloat(s);
+        return isNaN(v) ? 0 : Math.round(v * 100);
+      }
+
+      function parseQty(s) {
+        s = String(s).replace(/\s/g, '').replace(',', '.');
+        var v = parseFloat(s);
+        return isNaN(v) ? 0 : v;
+      }
+
+      var tbody = document.getElementById('line-items-body');
+      var totalNetto = document.getElementById('total-netto');
+      var totalMwst = document.getElementById('total-mwst');
+      var totalBrutto = document.getElementById('total-brutto');
+
+      function recomputeTotals() {
+        var netto = 0;
+        tbody.querySelectorAll('tr').forEach(function (row) {
+          netto += parseInt(row.dataset.amount, 10) || 0;
+        });
+        var mwst = Math.round(netto * 0.19);
+        var brutto = netto + mwst;
+        totalNetto.textContent = formatCents(netto);
+        totalMwst.textContent = formatCents(mwst);
+        totalBrutto.textContent = formatCents(brutto);
+      }
+
+      function iconSvg(edit) {
+        if (edit) {
+          return '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13.5l-.5 3 3-.5L15 7.5 12.5 5 4 13.5z" stroke-linejoin="round"/></svg>';
+        }
+        return '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+
+      function buildRow(type, name, qtyRaw, priceRaw, amount) {
+        var tr = document.createElement('tr');
+        tr.dataset.type = type;
+        tr.dataset.name = name;
+        tr.dataset.qtyRaw = qtyRaw;
+        tr.dataset.priceRaw = priceRaw;
+        tr.dataset.amount = String(amount);
+
+        var qtyDisplay = type === 'labour' ? (qtyRaw + ' Std.') : qtyRaw;
+        var priceDisplay = formatCents(parseEuro(priceRaw));
+        var sumDisplay = formatCents(amount);
+
+        var td1 = document.createElement('td');
+        td1.textContent = name;
+        var td2 = document.createElement('td');
+        td2.className = 'num tabular';
+        td2.textContent = qtyDisplay;
+        var td3 = document.createElement('td');
+        td3.className = 'num tabular';
+        td3.textContent = priceDisplay;
+        var td4 = document.createElement('td');
+        td4.className = 'num tabular';
+        td4.textContent = sumDisplay;
+        var td5 = document.createElement('td');
+        td5.style.width = '96px';
+        td5.innerHTML =
+          '<button class="icon-btn btn-edit" aria-label="Position bearbeiten">' + iconSvg(true) + '</button>' +
+          '<button class="icon-btn btn-delete" aria-label="Position löschen">' + iconSvg(false) + '</button>';
+
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.appendChild(td5);
+        return tr;
+      }
+
+      // Editor
+      var editor = document.getElementById('editor');
+      var addBtn = document.getElementById('add-position');
+      var posType = document.getElementById('pos-type');
+      var posName = document.getElementById('pos-name');
+      var posQty = document.getElementById('pos-qty');
+      var posPrice = document.getElementById('pos-price');
+      var qtyLabel = document.getElementById('pos-qty-label');
+      var saveBtn = document.getElementById('pos-save');
+      var cancelBtn = document.getElementById('pos-cancel');
+      var editingRow = null;
+
+      function updateQtyLabel() {
+        qtyLabel.textContent = posType.value === 'labour' ? 'Stunden' : 'Menge';
+        posQty.placeholder = posType.value === 'labour' ? '4,0' : '1';
+      }
+      posType.addEventListener('change', updateQtyLabel);
+
+      addBtn.addEventListener('click', function () {
+        editingRow = null;
+        posType.value = 'part';
+        posName.value = '';
+        posQty.value = '';
+        posPrice.value = '';
+        updateQtyLabel();
+        editor.hidden = false;
+        posName.focus();
+      });
+
+      cancelBtn.addEventListener('click', function () { editor.hidden = true; editingRow = null; });
+
+      function bindRowActions(row) {
+        row.querySelector('.btn-edit').addEventListener('click', function () {
+          editingRow = row;
+          posType.value = row.dataset.type;
+          posName.value = row.dataset.name;
+          posQty.value = row.dataset.qtyRaw;
+          posPrice.value = row.dataset.priceRaw;
+          updateQtyLabel();
+          editor.hidden = false;
+          posName.focus();
+        });
+        row.querySelector('.btn-delete').addEventListener('click', function () {
+          openDelete(row);
+        });
+      }
+
+      tbody.querySelectorAll('tr').forEach(bindRowActions);
+
+      saveBtn.addEventListener('click', function () {
+        var name = posName.value.trim();
+        var qtyRaw = posQty.value.trim();
+        var priceRaw = posPrice.value.trim();
+        if (!name || !qtyRaw || !priceRaw) { return; }
+
+        var qty = parseQty(qtyRaw);
+        var priceCents = parseEuro(priceRaw);
+        var amount = Math.round(qty * priceCents);
+        var type = posType.value;
+
+        if (editingRow) {
+          editingRow.dataset.type = type;
+          editingRow.dataset.name = name;
+          editingRow.dataset.qtyRaw = qtyRaw;
+          editingRow.dataset.priceRaw = priceRaw;
+          editingRow.dataset.amount = String(amount);
+          var cells = editingRow.children;
+          cells[0].textContent = name;
+          cells[1].textContent = type === 'labour' ? qtyRaw + ' Std.' : qtyRaw;
+          cells[2].textContent = formatCents(priceCents);
+          cells[3].textContent = formatCents(amount);
+          showToast('Position aktualisiert');
+        } else {
+          var row = buildRow(type, name, qtyRaw, priceRaw, amount);
+          bindRowActions(row);
+          tbody.appendChild(row);
+          showToast('Position hinzugefügt');
+        }
+        recomputeTotals();
+        editor.hidden = true;
+        editingRow = null;
+      });
+
+      // Delete confirmation
+      var deleteOverlay = document.getElementById('delete-overlay');
+      var deleteBody = document.getElementById('delete-body');
+      var deleteOk = document.getElementById('delete-ok');
+      var deleteCancel = document.getElementById('delete-cancel');
+      var deleteRow = null;
+
+      function openDelete(row) {
+        deleteRow = row;
+        deleteBody.textContent = '„' + row.dataset.name + '“ wirklich löschen? Die Summen werden danach neu berechnet.';
+        deleteOverlay.hidden = false;
+      }
+      deleteCancel.addEventListener('click', function () { deleteOverlay.hidden = true; });
+      deleteOverlay.addEventListener('click', function (e) { if (e.target === deleteOverlay) deleteOverlay.hidden = true; });
+      deleteOk.addEventListener('click', function () {
+        if (!deleteRow) return;
+        deleteRow.remove();
+        deleteRow = null;
+        deleteOverlay.hidden = true;
+        recomputeTotals();
+        showToast('Position gelöscht');
+      });
+
+      // Status change
+      var confirmOverlay = document.getElementById('confirm-overlay');
+      var confirmOk = document.getElementById('confirm-ok');
+      var confirmCancel = document.getElementById('confirm-cancel');
+      var nextStatus = document.getElementById('next-status');
+      var statusBadge = document.getElementById('status-badge');
+      var statusLabel = document.getElementById('status-label');
+
+      nextStatus.addEventListener('click', function () {
+        confirmOverlay.hidden = false;
+      });
+      confirmCancel.addEventListener('click', function () { confirmOverlay.hidden = true; });
+      confirmOverlay.addEventListener('click', function (e) { if (e.target === confirmOverlay) confirmOverlay.hidden = true; });
+
+      confirmOk.addEventListener('click', function () {
+        confirmOverlay.hidden = true;
+        statusBadge.className = 'badge badge--done';
+        statusLabel.textContent = 'fertig';
+        var doneItem = document.getElementById('timeline-done');
+        doneItem.classList.remove('timeline__item--future');
+        doneItem.querySelector('.timeline__dot').className = 'timeline__dot timeline__dot--done';
+        var now = '14.03.2025, 15:40';
+        doneItem.querySelector('.timeline__content').innerHTML =
+          '<span class="timeline__label">fertig</span><span class="timeline__time" style="float: right;">' + now + '</span>';
+        nextStatus.disabled = true;
+        nextStatus.textContent = 'Fertig';
+        nextStatus.title = 'Auftrag ist bereits fertig';
+        showToast('Status auf fertig gesetzt');
+      });
+
+      // Toast
+      var toast = document.getElementById('toast');
+      var toastText = document.getElementById('toast-text');
+      var toastClose = document.getElementById('toast-close');
+      var toastTimer;
+
+      function showToast(msg) {
+        toastText.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 4000);
+      }
+      toastClose.addEventListener('click', function () { toast.hidden = true; });
+
+      // Close overlays with Escape
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          confirmOverlay.hidden = true;
+          deleteOverlay.hidden = true;
+        }
+      });
+
+      recomputeTotals();
+    })();
+  </script>
+</body>
+</html>

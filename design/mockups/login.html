@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anmelden — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head" style="max-width: 440px; margin-left: auto; margin-right: auto;">
+      <h1 class="page-title" data-od-id="page-title">Werkstatt-Anmeldung</h1>
+      <p class="page-desc" data-od-id="page-desc">Dieser Bereich ist für Mitarbeiterinnen und Mitarbeiter der Werkstatt.</p>
+    </div>
+
+    <div class="card" style="max-width: 440px; margin: 0 auto;">
+      <form id="login-form" novalidate data-od-id="login-form">
+        <div id="login-error" hidden>
+          <div class="banner banner--danger" role="alert" data-od-id="login-error-banner">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>
+            <div class="banner__body">
+              E-Mail oder Passwort ist falsch.
+              <span class="banner__code">Code: invalid_credentials</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="email">E-Mail</label>
+          <input class="field__control" id="email" name="email" type="email" autocomplete="username" placeholder="mitarbeiter@werkstatt.de">
+          <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte E-Mail-Adresse angeben.</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="password">Passwort</label>
+          <input class="field__control" id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••">
+          <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte Passwort angeben.</span>
+        </div>
+
+        <div class="page-actions" style="margin-top: 4px;">
+          <button type="submit" class="btn btn--primary btn--block" data-od-id="login-submit">Anmelden</button>
+        </div>
+      </form>
+    </div>
+
+    <p class="page-foot" style="text-align: center;" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</p>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById('login-form');
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const errorBox = document.getElementById('login-error');
+
+      [email, password].forEach(function (el) {
+        el.addEventListener('blur', function () {
+          if (el.value.trim().length > 0) {
+            el.closest('.field').classList.toggle('is-invalid', el.value.trim().length === 0);
+          }
+        });
+        el.addEventListener('input', function () {
+          if (el.closest('.field').classList.contains('is-invalid')) {
+            el.closest('.field').classList.toggle('is-invalid', el.value.trim().length === 0);
+          }
+        });
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const emailOk = email.value.trim().length > 0;
+        const pwOk = password.value.length > 0;
+        email.closest('.field').classList.toggle('is-invalid', !emailOk);
+        password.closest('.field').classList.toggle('is-invalid', !pwOk);
+        errorBox.hidden = emailOk && pwOk;
+        if (emailOk && pwOk) {
+          window.location.href = 'dashboard.html';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

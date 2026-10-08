@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termin anfragen — Werkstatt-Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" data-od-id="app-bar">
+    <div class="app-bar__inner">
+      <a href="index.html" class="wordmark" data-od-id="wordmark">Werkstatt-Portal</a>
+      <button class="icon-btn app-bar__menu" aria-label="Menü öffnen" aria-expanded="false" aria-controls="app-nav" data-od-id="menu-toggle">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+      </button>
+      <nav id="app-nav" class="app-nav" aria-label="Kundenbereich" data-od-id="app-nav">
+        <a href="termin-anfragen.html" class="nav-link is-active">Termin anfragen</a>
+        <a href="status-abruf.html" class="nav-link">Status abrufen</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" data-od-id="main">
+    <div class="page-head">
+      <div class="page-head__row">
+        <div>
+          <h1 class="page-title" data-od-id="page-title">Termin anfragen</h1>
+          <p class="page-desc" data-od-id="page-desc">Sagen Sie uns, was an Ihrem Fahrzeug zu tun ist — wir melden uns mit einem Terminvorschlag.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="max-width: 720px;">
+      <div id="success-box" hidden>
+        <div class="banner banner--success" role="status" data-od-id="success-banner">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="banner__body">
+            Ihre Terminanfrage ist eingegangen. Wir prüfen sie und melden uns mit einem Terminvorschlag.
+            <span class="banner__code">Ihre Auftragsnummer: <span class="mono tabular">A-2025-0147</span></span>
+          </div>
+        </div>
+        <p class="muted" style="font-size: 14px;">Notieren Sie sich die Auftragsnummer zusammen mit dem Kennzeichen — damit können Sie unter <a href="status-abruf.html">Status abrufen</a> jederzeit den Bearbeitungsstand einsehen.</p>
+      </div>
+
+      <form id="appointment-form" novalidate data-od-id="appointment-form">
+        <div class="form-row">
+          <div class="field">
+            <label class="field__label" for="name">Name</label>
+            <input class="field__control" id="name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname">
+            <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte geben Sie Ihren Namen an.</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="email">E-Mail</label>
+            <input class="field__control" id="email" name="email" type="email" autocomplete="email" placeholder="name@beispiel.de">
+            <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte geben Sie eine gültige E-Mail-Adresse an.</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="phone">Telefon</label>
+          <input class="field__control" id="phone" name="phone" type="tel" autocomplete="tel" placeholder="z. B. 0171 2345678">
+          <span class="field__helper">Für die Terminabstimmung.</span>
+        </div>
+
+        <h2 class="card__title" style="margin: 24px 0 4px;">Fahrzeug</h2>
+
+        <div class="field">
+          <label class="field__label" for="plate">Kennzeichen</label>
+          <input class="field__control plate" id="plate" name="plate" type="text" maxlength="10" placeholder="M-KF 4711" style="text-transform: uppercase;">
+          <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte geben Sie das Kennzeichen an.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label class="field__label" for="make">Marke</label>
+            <input class="field__control" id="make" name="make" type="text" placeholder="z. B. BMW">
+          </div>
+          <div class="field">
+            <label class="field__label" for="model">Modell</label>
+            <input class="field__control" id="model" name="model" type="text" placeholder="z. B. 320i">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="mileage">Kilometerstand</label>
+          <input class="field__control tabular" id="mileage" name="mileage" type="text" inputmode="numeric" placeholder="128450">
+          <span class="field__helper">Ganze Kilometer, z. B. 128450.</span>
+        </div>
+
+        <h2 class="card__title" style="margin: 24px 0 4px;">Ihr Anliegen</h2>
+
+        <div class="field">
+          <label class="field__label" for="date">Wunschtermin</label>
+          <input class="field__control tabular" id="date" name="date" type="date">
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="description">Problembeschreibung</label>
+          <textarea class="field__control" id="description" name="description" placeholder="Beschreiben Sie kurz, was zu tun ist — z. B. 'Inspektion fällig, Bremsen quietschen beim Bremsen'"></textarea>
+          <span class="field__error"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 6v5M10 14v.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8"/></svg>Bitte beschreiben Sie kurz Ihr Anliegen.</span>
+        </div>
+
+        <div class="page-actions" style="margin-top: 8px;">
+          <button type="submit" class="btn btn--primary" data-od-id="submit-appointment">Termin anfragen</button>
+        </div>
+      </form>
+    </div>
+
+    <footer class="page-foot" data-od-id="footer">Werkstatt-Portal · Beispielumgebung, keine echte Werkstatt.</footer>
+  </main>
+
+  <script>
+    (function () {
+      const menuBtn = document.querySelector('.app-bar__menu');
+      const nav = document.getElementById('app-nav');
+      menuBtn.addEventListener('click', function () {
+        const open = nav.classList.toggle('is-open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menuBtn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+      });
+
+      const form = document.getElementById('appointment-form');
+      const successBox = document.getElementById('success-box');
+      const fields = [
+        { el: document.getElementById('name'), field: 'name' },
+        { el: document.getElementById('email'), field: 'email' },
+        { el: document.getElementById('plate'), field: 'plate' },
+        { el: document.getElementById('description'), field: 'description' }
+      ];
+
+      function validateField(item) {
+        const wrap = item.el.closest('.field');
+        let valid = true;
+        const value = item.el.value.trim();
+        if (item.field === 'name') valid = value.length > 0;
+        if (item.field === 'email') valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
+        if (item.field === 'plate') valid = value.length > 0;
+        if (item.field === 'description') valid = value.length > 0;
+        wrap.classList.toggle('is-invalid', !valid);
+        return valid;
+      }
+
+      fields.forEach(function (item) {
+        item.el.addEventListener('blur', function () {
+          if (item.el.value.trim().length > 0) validateField(item);
+        });
+        item.el.addEventListener('input', function () {
+          if (item.el.closest('.field').classList.contains('is-invalid')) validateField(item);
+        });
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        let allValid = true;
+        fields.forEach(function (item) {
+          if (!validateField(item)) allValid = false;
+        });
+        if (allValid) {
+          form.hidden = true;
+          successBox.hidden = false;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
