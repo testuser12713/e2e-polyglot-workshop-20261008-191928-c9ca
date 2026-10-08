@@ -39,8 +39,11 @@ func main() {
 		log.Fatalf("migrations: %v", err)
 	}
 
+	// Seeding is not best-effort: the workshop login depends on the employee
+	// accounts existing, so a failure here (a database problem) must stop the
+	// API instead of letting it serve a login nobody can use.
 	if err := auth.Seed(ctx, auth.NewStore(pool), cfg.EmployeeEmail, cfg.EmployeePassword); err != nil {
-		log.Printf("seed employee: %v", err)
+		log.Fatalf("seed employee: %v", err)
 	}
 
 	publisher := queue.NewPublisher(cfg.ValkeyURL, cfg.QueueName)

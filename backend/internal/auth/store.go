@@ -6,6 +6,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -63,6 +64,12 @@ func (s *Store) UpsertEmployee(ctx context.Context, name, email, passwordHash st
 			SET name = EXCLUDED.name,
 			    password_hash = EXCLUDED.password_hash
 		RETURNING id, name, email, password_hash`
+
+	// Store one canonical spelling: the lookup in FindByEmail is
+	// case-insensitive, so a mixed-case e-mail here would not conflict with an
+	// existing lower-case row and could leave two accounts a login picks from
+	// arbitrarily.
+	email = strings.ToLower(strings.TrimSpace(email))
 
 	var e Employee
 	err := s.DB.QueryRow(ctx, query, name, email, passwordHash).
