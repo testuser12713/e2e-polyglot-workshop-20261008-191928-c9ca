@@ -1,0 +1,35 @@
+# Starts the two data stores the Kfz-Werkstatt portal needs, on their usual
+# ports, so someone who clones the repo can run the API locally:
+#
+#   docker compose up -d
+#
+# PostgreSQL 18 for all persistent data, Valkey 9.1 as the invoice queue.
+services:
+  db:
+    image: docker.io/library/postgres:18.6-trixie
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    image: docker.io/valkey/valkey:9.1.2-trixie
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
