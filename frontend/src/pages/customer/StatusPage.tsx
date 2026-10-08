@@ -2,19 +2,72 @@ import { useState, type FormEvent } from "react";
 
 import { ApiError } from "../../api/client";
 import {
-  formatDateTime,
-  formatEuro,
-  formatMenge,
   getOrderStatus,
   normalizePlate,
   type Invoice,
+  type OrderItem,
   type OrderStatusResponse,
   type StatusHistoryEntry,
 } from "../../api/orderStatus";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import FormField from "../../components/FormField";
-import StatusBadge, { STATUS_LABELS } from "../../components/StatusBadge";
+import StatusBadge, { STATUS_LABELS, type OrderStatus } from "../../components/StatusBadge";
+import "./StatusPage.css";
+
+/**
+ * Whole cents to German Euro: `123456` -> `1.234,56 €`, two decimals, comma
+ * decimal separator, dot thousands separator (DESIGN.md number formatting).
+ * The api layer deals in cents only — the Euro rendering lives here.
+ */
+function formatEuro(cents: number): string {
+  const sign = cents < 0 ? "-" : "";
+  const absolute = Math.abs(Math.round(cents));
+  const euros = Math.floor(absolute / 100);
+  const remainder = absolute % 100;
+  return `${sign}${euros.toLocaleString("de-DE")},${String(remainder).padStart(2, "0")} €`;
+}
+
+/** ISO-8601 UTC instant to the fixed display time zone Europe/Berlin. */
+function formatDateTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return "–";
+  }
+  return new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+/** Labour time: `2.5` -> `2,5 Std.` (comma, one decimal, German unit). */
+function formatHours(hours: number): string {
+  return `${hours.toFixed(1).replace(".", ",")} Std.`;
+}
+
+/** The Menge column: hours for labour, the count for a part, else an en dash. */
+function formatMenge(item: OrderItem): string {
+  if (item.kind === "labor" && item.hours != null) {
+    return formatHours(item.hours);
+  }
+  if (item.quantity != null) {
+    return String(item.quantity);
+  }
+  return "–";
+}
+
+/** The workflow order, used to render the not-yet-reached steps of the timeline. */
+const STATUS_SEQUENCE: OrderStatus[] = [
+  "requested",
+  "confirmed",
+  "in_progress",
+  "done",
+  "picked_up",
+];
 
 /**
  * Customer status lookup (GET /api/orders/status). The search runs only on
@@ -61,7 +114,7 @@ export default function StatusPage() {
   }
 
   return (
-    <section>
+    <section className="status-page">
       <h1 className="page__title">Status abrufen</h1>
       <p className="page__lead">
         Geben Sie Ihre Auftragsnummer und das Kennzeichen ein, um den Bearbeitungsstand und – sobald
@@ -81,7 +134,7 @@ export default function StatusPage() {
                 <input
                   id="order-no"
                   name="orderNo"
-                  className="mono"
+                  className="field__control mono"
                   type="text"
                   autoComplete="off"
                   placeholder="A-2025-0139"
@@ -99,7 +152,7 @@ export default function StatusPage() {
                 <input
                   id="plate"
                   name="plate"
-                  className="mono"
+                  className="field__control mono"
                   type="text"
                   maxLength={10}
                   autoComplete="off"
@@ -158,7 +211,7 @@ export default function StatusPage() {
               </Card>
 
               <Card title="Verlauf">
-                <StatusTimeline entries={result.history} />
+                <StatusTimeline entries={result.history} currentStatus={result.status} />
               </Card>
             </div>
 
@@ -182,9 +235,22 @@ export default function StatusPage() {
   );
 }
 
-/** DESIGN.md StatusTimeline: a reached dot + status label + timestamp per entry. */
-function StatusTimeline({ entries }: { entries: StatusHistoryEntry[] }) {
-  if (entries.length === 0) {
+/**
+ * DESIGN.md StatusTimeline: reached steps are filled (dot + German label +
+ * timestamp); the steps not reached yet are shown empty and dimmed.
+ */
+function StatusTimeline({
+  entries,
+  currentStatus,
+}: {
+  entries: StatusHistoryEntry[];
+  currentStatus: OrderStatus;
+}) {
+  const reached = new Set(entries.map((entry) => entry.status));
+  const currentIndex = STATUS_SEQUENCE.indexOf(currentStatus);
+  const future = STATUS_SEQUENCE.slice(currentIndex + 1).filter((status) => !reached.has(status));
+
+  if (entries.length === 0 && future.length === 0) {
     return <p className="invoice-empty">Noch kein Verlauf vorhanden</p>;
   }
 
@@ -205,6 +271,17 @@ function StatusTimeline({ entries }: { entries: StatusHistoryEntry[] }) {
           </li>
         );
       })}
+      {future.map((status) => (
+        <li className="timeline__item timeline__item--future" key={status}>
+          <span className="timeline__rail">
+            <span className="timeline__dot timeline__dot--future" aria-hidden="true" />
+            <span className="timeline__connector" aria-hidden="true" />
+          </span>
+          <span className="timeline__content">
+            <span className="timeline__label">{STATUS_LABELS[status]}</span>
+          </span>
+        </li>
+      ))}
     </ol>
   );
 }

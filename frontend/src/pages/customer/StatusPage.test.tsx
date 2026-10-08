@@ -118,6 +118,9 @@ describe("StatusPage successful lookup", () => {
     expect(screen.getByText("05.03.2025, 10:14")).toBeInTheDocument();
     expect(screen.getByText("12.03.2025, 16:42")).toBeInTheDocument();
 
+    const futureStep = screen.getByText("abgeholt").closest("li");
+    expect(futureStep).toHaveClass("timeline__item--future");
+
     expect(screen.getByRole("heading", { name: "Rechnung" })).toBeInTheDocument();
     expect(screen.getByText("Arbeitszeit — Bremsenservice")).toBeInTheDocument();
     expect(screen.getByText("2,5 Std.")).toBeInTheDocument();
