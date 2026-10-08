@@ -108,7 +108,9 @@ describe("StatusPage successful lookup", () => {
 
     expect((await screen.findAllByText("fertig")).length).toBeGreaterThan(0);
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe(
+    // The client prefixes the configured API base, so assert on the path and
+    // query (the interface this ticket owns) rather than the full origin.
+    expect(fetchMock.mock.calls[0][0]).toContain(
       "/api/orders/status?order_number=A-2025-0139&plate=F-RS+6207",
     );
 
